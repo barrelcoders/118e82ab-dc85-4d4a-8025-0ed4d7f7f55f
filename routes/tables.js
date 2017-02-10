@@ -202,5 +202,24 @@ router.post('/getCustomTable', function(req, res) {
         })
     }
 });
-
+router.post('/loadGifts', function(req, res) {
+    DAL.db.gifts.loadGifts(function(gifts){
+            if (!gifts || gifts.length === 0) {
+                res.json({
+                    status: 'failed',
+                    message: 'NO_GIFTS_FOUND'
+                });
+            } else {
+                res.json({
+                    status: 'success',
+                    data: gifts
+                });
+            }
+        }, function(err){
+            res.json({
+                status: 'failed',
+                message: 'PROBLEM_FETCHING_GIFTS'
+            });
+        });
+});
 module.exports = router;

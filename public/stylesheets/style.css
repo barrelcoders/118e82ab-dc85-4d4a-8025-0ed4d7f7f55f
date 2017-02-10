@@ -1473,6 +1473,16 @@ md-dialog.name-dialog md-dialog-content{
   top: 80px;
   padding: 0 60px;
 }
+md-dialog.share-dialog{
+  height: 380px;
+}
+md-dialog.share-dialog md-dialog-content{
+  top: 80px;
+  padding: 0 50px;
+  width: 600px;
+  height: 250px;
+  overflow: hidden;
+}
 md-dialog h2{
   text-align: center;
   margin: 0;
@@ -1514,4 +1524,36 @@ audio{
 .character-container > div {
   height: 350px;
   overflow-y: auto;
+}
+.gifts-container {
+  width: 500px;
+  height: 200px;
+  overflow-y: auto;
+}
+.gift-item{
+  height: 90px;
+  width: 90px;
+  padding: 50px 10px;
+  margin-right: 20px;
+  background: url(../images/table-box.png) center no-repeat;
+  background-size: contain;
+  position: relative;
+  display: inline-block;
+  float: left;
+}
+.gift-item > div {
+  position: absolute;
+  top: 20px;
+  left: 25px;
+  height: 40px;
+  width: 40px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.gift-item > span {
+  margin: 10px 0;
+  display: block;
+  text-align: center;
+  width: 65px;
 }

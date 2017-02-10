@@ -50,7 +50,7 @@ angular.module('table99', [
         $mdDialogProvider.addPreset('share', {
             options: function() {
                 return {
-                    templateUrl:"../templates/share.html",
+                    templateUrl:"../templates/shareDialog.html",
                     controller: 'shareCtrl',
                 };
             }
@@ -189,8 +189,8 @@ angular.module('table99.directives').directive('playingCard', [
 
     }
 ]);
-angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundService',
-    function($filter, soundService) {
+angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundService', '$mdDialog', '$timeout',
+    function($filter, soundService, $mdDialog, $timeout) {
         return {
             scope: {
                 table: '=',
@@ -223,6 +223,29 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                         });
                     });
                 }
+                function doGiftAnimation (args) {
+                    //if(!args.from.top || !args.from.left || !args.to.top || !args.to.left)
+                    //    return;
+
+                    var animateDiv = $("<div style='height: 50px;width: 50px;background-size: contain;background-repeat:no-repeat;background-position:center;position: absolute;z-index: 99;"+args.image+"' ></div>").appendTo("body"),
+                        animateFrom = args.from,
+                        animateTo = args.to;
+
+                    animateFrom.top += 90;
+                    animateFrom.left += 90;
+                    animateTo.left += 90;
+                    animateTo.top += 90;
+                    animateDiv.css(animateFrom);
+                    animateDiv.fadeIn(function() {
+                        animateDiv.animate(animateTo, 1000, function() {
+                            $timeout(function(){
+                                animateDiv.remove();
+                                scope.$parent.giftAnimationInProgress = false;
+                            }, 5000);
+                        });
+                    });
+                }
+
                 var performBetAnimation = scope.$on('performBetAnimation', function(evt, args) {
                     if (scope.player && scope.player.turn) {
                         doAnimation({
@@ -249,33 +272,53 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                         });
                     }
                 });
+                var performGiftAnimation = scope.$on('performGiftAnimation', function(evt, args) {
+                    //if (scope.player && scope.player.active) {
 
-                $('body').on("click", ".side-player", function(event, args){
-                    if(scope.player){
+                    if(scope.$parent.giftAnimationInProgress)
+                        return;
+
+                    var from = $("input[value="+args.from+"]").offset(),
+                        to = $("input[value="+args.to+"]").offset();
+                    doGiftAnimation({
+                        from: from,
+                        to: to,
+                        image: args.image,
+                    });
+                    //}
+                });
+
+                scope.share = function(event){
+                    if(scope.player && scope.player.active){
                         $mdDialog.show(
                             $mdDialog.share({
                                 scope: scope,
                                 preserveScope: true,
                                 parent: angular.element(document.body),
                                 targetEvent: event,
-                                locals: {destPosition: $(event.target).offset()},
+                                locals: {
+                                    SOURCE: angular.element(document.body).find(".current-player-id").val(),
+                                    DESTINATION: $(element).find(".side-player-id").val(),
+                                    USER: scope.$parent.currentPlayer.playerInfo,
+                                    TABLE_ID: scope.$parent.tableId
+                                },
                             })
                         );
                     }
-
-                });
+                };
 
                 scope.$on('$destroy', function(){
                     performBetAnimation();
                     performWinnerAnimation();
                     performBootAnimation();
+                    performGiftAnimation();
                 });
             }
-        }
+        };
     }
 ]);
-angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundService',
-    function($filter, soundService) {
+angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundService', '$timeout',
+    function($filter, soundService, $timeout) {
         var BLIND_ALLOWED = 4;
         return {
             scope: {
@@ -289,7 +332,6 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
             },
             templateUrl: 'main.player.html',
             link: function(scope, element, attrs) {
-
                 function doAnimation(args, reverse) {
                     var animateDiv = $('<div class="animate-bet alert alert-warning"><i class="fa fa-rupee"></i> ' + $filter('number')(args.amount) + '</div>').appendTo("body")
                     var animateTo = $(".table-bet").offset();
@@ -312,6 +354,25 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                                     args.callback();
                                 }
                             });
+                        });
+                    });
+                }
+                function doGiftAnimation (args) {
+                    var animateDiv = $("<div style='height: 50px;width: 50px;background-size: contain;background-repeat:no-repeat;background-position:center;position: absolute;z-index: 99;"+args.image+"' ></div>").appendTo("body"),
+                        animateFrom = args.from,
+                        animateTo = args.to;
+
+                    animateFrom.top += 90;
+                    animateFrom.left += 90;
+                    animateTo.left += 90;
+                    animateTo.top += 90;
+                    animateDiv.css(animateFrom);
+                    animateDiv.fadeIn(function() {
+                        animateDiv.animate(animateTo, 1000, function() {
+                            $timeout(function(){
+                                animateDiv.remove();
+                                scope.$parent.giftAnimationInProgress = false;
+                            }, 5000);
                         });
                     });
                 }
@@ -343,10 +404,27 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                     }
 
                 });
+                var performGiftAnimation = scope.$on('performGiftAnimation', function(evt, args) {
+
+                    if(scope.$parent.giftAnimationInProgress)
+                        return;
+
+                    var from = $("input[value="+args.from+"]").offset(),
+                        to = $("input[value="+args.to+"]").offset();
+
+
+                    doGiftAnimation({
+                        from: from,
+                        to: to,
+                        image: args.image,
+                    });
+                });
+
                 scope.$on('$destroy', function(){
                     performBetAnimation();
                     performWinnerAnimation();
                     performBootAnimation();
+                    performGiftAnimation();
                 });
                 scope.disableActions = false;
                 scope.pack = function() {
@@ -355,8 +433,7 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                     scope.player.packed = true;
                     scope.disableActions = true;
                     scope.placePack();
-                }
-
+                };
                 scope.blind = function() {
                     scope.table.lastBlind = true;
                     scope.table.lastBet = scope.possibleBet;
@@ -365,8 +442,7 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                     scope.disableActions = true;
                     scope.blindCount++;
                     scope.placeBet();
-                }
-
+                };
                 scope.chaal = function() {
                     scope.player.lastAction = "Chaal";
                     scope.player.lastBet = scope.possibleBet;
@@ -374,8 +450,7 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                     scope.table.lastBet = scope.possibleBet;
                     scope.placeBet();
                     scope.disableActions = true;
-                }
-
+                };
                 scope.show = function() {
                     scope.player.lastAction = "Show";
                     scope.player.lastBet = scope.possibleBet;
@@ -384,7 +459,7 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                     scope.player.show = true;
                     scope.placeBet();
                     scope.disableActions = true;
-                }
+                };
                 scope.sideshow = function() {
                     scope.player.lastAction = "Side Show";
                     scope.table.lastBlind = false;
@@ -392,29 +467,41 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                     scope.player.sideshow = true;
                     scope.disableActions = true;
                     scope.placeSideShow();
-                }
+                };
                 scope.acceptSideShow = function() {
                     scope.player.lastAction = "Accepted";
                     scope.respondSideShow();
-                }
+                };
                 scope.denySideShow = function() {
                     scope.player.lastAction = "Denied";
                     scope.respondSideShow();
+                };
+                scope.changeBet = function(type) {
+                    switch (type) {
+                        case '-':
+                            scope.possibleBet = scope.possibleBet / 2;
+                            break;
+                        case '+':
+                            scope.possibleBet = scope.possibleBet * 2;
+                            break;
+                    }
+                    updateButtons();
                 }
+                scope.plus = function() {
+                    scope.changeBet('+');
+                }
+                scope.minus = function() {
+                    scope.changeBet('-');
+                }
+                scope.$on('startNew', function(args) {
+                    if (scope.player && scope.player.active) {
+                        setInitialValues();
+                    }
+                });
                 scope.$watch('table', function(newVal) {
                     if (newVal) {
                         updatePossibleBet();
                         updateButtons();
-                    }
-                });
-
-                function setInitialValues() {
-                    scope.blindCount = 0;
-                }
-
-                scope.$on('startNew', function(args) {
-                    if (scope.player && scope.player.active) {
-                        setInitialValues();
                     }
                 });
                 scope.$watch('player.turn', function(newVal) {
@@ -431,36 +518,19 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                         updatePossibleBet();
                     }
                 });
-                scope.changeBet = function(type) {
-                    switch (type) {
-                        case '-':
-                            scope.possibleBet = scope.possibleBet / 2;
-                            break;
-                        case '+':
-                            scope.possibleBet = scope.possibleBet * 2;
-                            break;
-                    }
-                    updateButtons();
-                }
 
+                function setInitialValues() {
+                    scope.blindCount = 0;
+                }
                 function updatePossibleBet() {
                     scope.possibleBet = getLastBet();
                     updateButtons();
                 }
-
                 function updateButtons() {
                     var minBet = getLastBet();
                     scope.disableMinus = (scope.possibleBet == minBet) || !(scope.possibleBet > minBet);
                     scope.disablePlus = ((scope.possibleBet == minBet * 2) && (scope.possibleBet <= scope.table.maxBet)) || (scope.possibleBet >= scope.table.maxBet / 2 && scope.player.cardSet.closed) || (scope.possibleBet >= scope.table.maxBet && !scope.player.cardSet.closed);
                 }
-
-                scope.plus = function() {
-                    scope.changeBet('+');
-                }
-                scope.minus = function() {
-                    scope.changeBet('-');
-                }
-
                 function getLastBet() {
                     if(scope.player.cardSet){
                         if (scope.player.cardSet.closed) {
@@ -478,9 +548,10 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                         }
                     }
                 }
+
                 setInitialValues();
             }
-        }
+        };
     }
 ]);
 angular.module('table99.directives').directive('tableNotifications', [
@@ -656,7 +727,7 @@ angular.module('table99.services').factory('userService', ['$http',
             fbsignin: function(params) {
                 return $http.post('/user/fbsignin', params);
             }
-        }
+        };
     }
 ]);
 angular.module('table99.services').factory('tableService', ['$http',
@@ -683,7 +754,10 @@ angular.module('table99.services').factory('tableService', ['$http',
             getCustomTables: function(params){
                 return $http.post ('/tables/getCustomTables', params);
             },
-        }
+            loadGifts: function(params){
+                return $http.post ('/tables/loadGifts', params);
+            },
+        };
     }
 ]);
 
@@ -1137,6 +1211,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
         $scope.tableId = tableId;
         $scope.tableInfoOpen = false;
         $scope.isMenuOpen = false;
+        $scope.giftAnimationInProgress = false;
 
         if($localStorage){
             if(!$localStorage.USER){
@@ -1263,6 +1338,9 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
         };
         $scope.closeChat = function(){
             $scope.isChatWindowOpen = !$scope.isChatWindowOpen;
+        };
+        $scope.sendGift = function(args){
+            socket.emit('sendGift', args);
         };
 
         $scope.user.avatar = $scope.user.avatar ? $scope.user.avatar : 'background: url(images/default_avatar.jpg);';
@@ -1748,8 +1826,17 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                 if(args.tableId != tableId)
                     return;
 
-                debugger;
+
             });
+            socket.on('sendGiftSuccess', function(args) {
+                if(args.tableId != tableId)
+                    return;
+
+                $scope.giftAnimationInProgress = true;
+                $scope.$broadcast('performGiftAnimation', args);
+
+            });
+
 
         }
         function fetchTable(){
@@ -2719,20 +2806,52 @@ angular.module('table99.controllers').controller('shopDialogCtrl', ['$rootScope'
     }
 ]);
 angular.module('table99.controllers').controller('shareCtrl', ['$rootScope', '$scope', '$state', '$localStorage',
-    'soundService', '$mdDialog', '$timeout', 'destPosition',
-    function($rootScope, $scope, $state, $localStorage, soundService, $mdDialog, $timeout, destPosition) {
-        $scope.send = function(object){
+    'soundService', '$mdDialog', '$timeout', 'tableService', 'userService', 'SOURCE', 'DESTINATION', 'USER', 'TABLE_ID',
+    function($rootScope, $scope, $state, $localStorage, soundService, $mdDialog, $timeout, tableService, userService, SOURCE, DESTINATION, USER, TABLE_ID) {
+        $scope.gifts = [];
+        var user = USER,
+            currentPlayer = $scope;
+
+        loadGifts();
+
+        $scope.send = function(gift){
             $mdDialog.hide();
-            var animateFrom = $(".current-player-outer").offset();
-            var animateTo = destPosition;
-            var animateDiv = $("<div style='height: 50px;width: 50px;background: url(../images/gifts.png);background-size: contain;position: absolute' ></div>").appendTo("body");
-            animateDiv.css(animateFrom);
-            animateDiv.fadeIn(function() {
-                animateDiv.animate(animateTo, 1000, function() {
-                    $timeout(function(){
-                        animateDiv.remove();
-                    }, 5000);
-                });
+            USER.chips -= gift.price;
+            userService.updateBalance({id: USER.id, chips: USER.chips}).success(function(res) {
+                if (res.status == 'success') {
+                    $scope.$parent.sendGift({
+                        from: SOURCE,
+                        to: DESTINATION,
+                        image: gift.image,
+                        tableId: $scope.$parent.tableId
+                    });
+                    /*$scope.$broadcast('performGiftAnimation', {
+                        from: SOURCE,
+                        to: DESTINATION,
+                        image: gift.image,
+                        tableId: TABLE_ID
+                    });*/
+                }
+
+                if (res.status == 'failed') {
+                    if(res.message == 'PROBLEM_FETCHING_CHAT'){
+                        alert("Problem in fetching gifts, Please try after sometime");
+                    }
+                }
             });
         };
+
+        function loadGifts(){
+            tableService.loadGifts().success(function(res) {
+                if (res.status == 'success') {
+                    $scope.gifts = res.data;
+                }
+
+                if (res.status == 'failed') {
+                    if(res.message == 'PROBLEM_FETCHING_CHAT'){
+                        alert("Problem in fetching gifts, Please try after sometime");
+                    }
+                }
+            });
+        }
     }]);

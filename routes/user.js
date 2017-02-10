@@ -71,12 +71,12 @@ router.post('/updateDisplayName', function(req, res) {
 });
 router.post('/updateBalance', function(req, res) {
     if (req.body.id && req.body.chips) {
-        DAL.db.users.updateBalance(req.body.chips, req.body.id, function(result){
+        DAL.db.users.updateBalance(req.body.chips, req.body.id, function () {
             res.json({
                 'status': 'success',
                 data: {chips: req.body.chips}
             });
-        }, function(error){
+        }, function(){
             res.json({
                 status: 'failed',
                 message: 'PROBLEM_UPDATING_BALANCE'
