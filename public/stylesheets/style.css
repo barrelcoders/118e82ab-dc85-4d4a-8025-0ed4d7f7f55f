@@ -768,7 +768,6 @@ a {
   padding: 10px 65px;
   width: 560px;
   height: 120px;
-  margin-left: -45px;
 }
 .background{
   height: 100px;
@@ -784,7 +783,6 @@ a {
   display: block;
   width: 496px;
   height: 226px;
-  margin-left: -15px;
 }
 .character-container .slick-next, .character-container .slick-prev,
 .background-container .slick-next, .background-container .slick-prev
@@ -837,8 +835,7 @@ ul{
   display: block;
   padding: 0 55px;
   width: 570px;
-  height: 300px;
-  margin-left: -50px;
+  height: 260px;
 }
 .shop-container .slick-list{
   height: 100%;
@@ -1428,12 +1425,53 @@ ul{
 
 md-dialog{
   width: 600px;
-  height: 600px;
+  height: 475px;
   padding: 60px;
-  background: url(../images/window.png) no-repeat;
   background-size: contain;
   box-shadow: none !important;
   overflow:hidden !important;
+  background-image: url(../images/win-upper.png), url(../images/win-bottom.png);
+  background-position: center top, 0 bottom;
+  background-color: transparent !important;
+  background-repeat: no-repeat, no-repeat;
+}
+md-dialog md-dialog-content {
+  background: url(../images/win-middle.png);
+  background-repeat: repeat-y;
+  width: 100%;
+  background-size: contain;
+  position: absolute;
+  top: 50px;
+  left: 0;
+}
+md-dialog.avatar-dialog{
+  height: 530px;
+}
+md-dialog.avatar-dialog md-dialog-content{
+  width: 600px;
+  height: 400px;
+  top: 80px;
+  padding-left: 45px;
+}
+md-dialog.background-dialog{
+  height: 300px;
+}
+md-dialog.background-dialog md-dialog-content{
+  top: 80px;
+}
+md-dialog.shop-dialog{
+  height: 455px;
+}
+md-dialog.shop-dialog md-dialog-content{
+  top: 70px;
+  height: 335px;
+}
+md-dialog.name-dialog{
+  height: 280px;
+}
+md-dialog.name-dialog md-dialog-content{
+  top: 80px;
+  padding: 0 60px;
 }
 md-dialog h2{
   text-align: center;

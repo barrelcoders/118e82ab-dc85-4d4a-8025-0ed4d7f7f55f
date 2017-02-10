@@ -18,40 +18,40 @@ angular.module('table99', [
         $mdDialogProvider.addPreset('updateDisplayName', {
             options: function() {
                 return {
-                    templateUrl:"../templates/displayNameDialog.html",
-                    controller: 'displayNameCtrl',
+                    templateUrl:"../templates/nameDialog.html",
+                    controller: 'nameDialogCtrl',
                 };
             }
         });
         $mdDialogProvider.addPreset('updateAvatar', {
             options: function() {
                 return {
-                    templateUrl:"../templates/updateAvatarDialog.html",
-                    controller: 'updateAvatarCtrl',
+                    templateUrl:"../templates/avatarDialog.html",
+                    controller: 'avatarDialogCtrl',
                 };
             }
         });
         $mdDialogProvider.addPreset('updateBackground', {
             options: function() {
                 return {
-                    templateUrl:"../templates/updateBackgroundDialog.html",
-                    controller: 'updateBackgroundCtrl',
+                    templateUrl:"../templates/backgroundDialog.html",
+                    controller: 'backgroundDialogCtrl',
                 };
             }
         });
         $mdDialogProvider.addPreset('shop', {
             options: function() {
                 return {
-                    templateUrl:"../templates/shop.html",
-                    controller: 'shopCtrl',
+                    templateUrl:"../templates/shopDialog.html",
+                    controller: 'shopDialogCtrl',
                 };
             }
         });
-        $mdDialogProvider.addPreset('fbFriends', {
+        $mdDialogProvider.addPreset('share', {
             options: function() {
                 return {
-                    templateUrl:"../templates/fbInvite.html",
-                    controller: 'facebookFriendCtrl',
+                    templateUrl:"../templates/share.html",
+                    controller: 'shareCtrl',
                 };
             }
         });
@@ -86,8 +86,8 @@ angular.module('table99', [
             })
             .state('shop', {
                 url: "/shop",
-                templateUrl: "../templates/shop.html",
-                controller: 'shopCtrl'
+                templateUrl: "../templates/shopDialog.html",
+                controller: 'shopDialogCtrl'
             })
             .state('createTable', {
                 url: "/createTable",
@@ -131,7 +131,7 @@ angular.module('table99', [
     }(document));
 
 })
-angular.module('table99.config', []).constant('BASE_URL','http://ec2-54-255-190-240.ap-southeast-1.compute.amazonaws.com:3000');
+angular.module('table99.config', []).constant('BASE_URL','http://ec2-54-255-190-240.ap-southeast-1.compute.amazonaws.com:3000/');
 angular.module('table99.controllers', []);
 angular.module('table99.directives', []);
 angular.module('table99.services', []);
@@ -249,6 +249,22 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                         });
                     }
                 });
+
+                $('body').on("click", ".side-player", function(event, args){
+                    if(scope.player){
+                        $mdDialog.show(
+                            $mdDialog.share({
+                                scope: scope,
+                                preserveScope: true,
+                                parent: angular.element(document.body),
+                                targetEvent: event,
+                                locals: {destPosition: $(event.target).offset()},
+                            })
+                        );
+                    }
+
+                });
+
                 scope.$on('$destroy', function(){
                     performBetAnimation();
                     performWinnerAnimation();
@@ -2034,33 +2050,6 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                     alert('Select friends to send request');
                 }
             });*/
-
-            /*FB.getLoginStatus(function(response) {
-                if (response.status === 'connected'){
-                    FB.api("/me/friends",{fields: 'name,email,id,location,birthday'},
-                        function (error) {debugger;
-                            alert("Problem in accessing friends, Please try again later");
-                        }, function (response) {
-                            if(response && !response.error){
-                                debugger;
-                                $mdDialog.show(
-                                    $mdDialog.fbFriends({
-                                        scope: $scope,
-                                        parent: angular.element(document.body),
-                                        targetEvent: $event,
-                                    })
-                                );
-                            }
-                        });
-                }
-                else{
-                    FB.login(function (response) {
-                        if(response ){
-                            debugger;
-                        }
-                    },{scope:'user_friends'});
-                }
-            });*/
         };
         $scope.openShopDialogFromMenu = function(){
             $scope.isMenuOpen = false;
@@ -2526,7 +2515,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
         }
     }
 ]);
-angular.module('table99.controllers').controller('displayNameCtrl', ['$rootScope', '$scope', '$state', '$localStorage',
+angular.module('table99.controllers').controller('nameDialogCtrl', ['$rootScope', '$scope', '$state', '$localStorage',
     'soundService', 'userService', '$mdDialog', 'caller',
     function($rootScope, $scope, $state, $localStorage, soundService, userService, $mdDialog, caller) {
         $scope.changeDisplayName = function(){
@@ -2562,7 +2551,7 @@ angular.module('table99.controllers').controller('displayNameCtrl', ['$rootScope
             }
         };
     }]);
-angular.module('table99.controllers').controller('updateAvatarCtrl', ['$rootScope', '$scope', '$state', '$localStorage',
+angular.module('table99.controllers').controller('avatarDialogCtrl', ['$rootScope', '$scope', '$state', '$localStorage',
     'soundService', 'userService', '$mdDialog', 'Upload', 'BASE_URL', 'caller',
     function($rootScope, $scope, $state, $localStorage, soundService, userService, $mdDialog, Upload, BASE_URL, caller) {
         $scope.up = {};
@@ -2650,7 +2639,7 @@ angular.module('table99.controllers').controller('updateAvatarCtrl', ['$rootScop
             }
         }
     }]);
-angular.module('table99.controllers').controller('updateBackgroundCtrl', ['$rootScope', '$scope', '$state', '$localStorage',
+angular.module('table99.controllers').controller('backgroundDialogCtrl', ['$rootScope', '$scope', '$state', '$localStorage',
     'soundService', '$mdDialog',
     function($rootScope, $scope, $state, $localStorage, soundService, $mdDialog) {
         $scope.slickConfig = {
@@ -2666,7 +2655,7 @@ angular.module('table99.controllers').controller('updateBackgroundCtrl', ['$root
             $mdDialog.cancel();
         };
     }]);
-angular.module('table99.controllers').controller('shopCtrl', ['$rootScope', '$localStorage', '$scope', 'userService',
+angular.module('table99.controllers').controller('shopDialogCtrl', ['$rootScope', '$localStorage', '$scope', 'userService',
     '$state', 'layoutService', 'soundService', '$mdDialog', 'caller',
     function($rootScope, $localStorage, $scope, userService, $state, layoutService, soundService, $mdDialog, caller) {
         $scope.shopItems = [{
@@ -2729,11 +2718,21 @@ angular.module('table99.controllers').controller('shopCtrl', ['$rootScope', '$lo
 
     }
 ]);
-angular.module('table99.controllers').controller('facebookFriendCtrl', ['$rootScope', '$scope', '$state', '$localStorage',
-    'soundService', '$mdDialog',
-    function($rootScope, $scope, $state, $localStorage, soundService, $mdDialog) {
-        $scope.invite = function(object){
-            alert('invite');
-            //$mdDialog.hide();
+angular.module('table99.controllers').controller('shareCtrl', ['$rootScope', '$scope', '$state', '$localStorage',
+    'soundService', '$mdDialog', '$timeout', 'destPosition',
+    function($rootScope, $scope, $state, $localStorage, soundService, $mdDialog, $timeout, destPosition) {
+        $scope.send = function(object){
+            $mdDialog.hide();
+            var animateFrom = $(".current-player-outer").offset();
+            var animateTo = destPosition;
+            var animateDiv = $("<div style='height: 50px;width: 50px;background: url(../images/gifts.png);background-size: contain;position: absolute' ></div>").appendTo("body");
+            animateDiv.css(animateFrom);
+            animateDiv.fadeIn(function() {
+                animateDiv.animate(animateTo, 1000, function() {
+                    $timeout(function(){
+                        animateDiv.remove();
+                    }, 5000);
+                });
+            });
         };
     }]);
