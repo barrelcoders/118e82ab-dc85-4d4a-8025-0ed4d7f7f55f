@@ -1887,6 +1887,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
         $scope.tableId = tableId;
         $scope.tableInfoOpen = false;
         $scope.isMenuOpen = false;
+        $scope.giftAnimationInProgress = false;
 
         function onError(){
             alert('Problem fetching facebook details, Please try again later');
@@ -2054,6 +2055,9 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
         };
         $scope.closeChat = function(){
             $scope.isChatWindowOpen = !$scope.isChatWindowOpen;
+        };
+        $scope.sendGift = function(args){
+            socket.emit('sendGift', args);
         };
 
         $scope.user.avatar = $scope.user.avatar ? $scope.user.avatar : 'background: url(images/default_avatar.jpg);';
@@ -2566,6 +2570,14 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                 if(!$scope.isChatWindowOpen){
                     $scope.isChatWindowOpen = true;
                 }
+            });
+            socket.on('sendGiftSuccess', function(args) {
+                if(args.tableId != tableId)
+                    return;
+
+                $scope.giftAnimationInProgress = true;
+                $scope.$broadcast('performGiftAnimation', args);
+
             });
         }
         function fetchTable(){
