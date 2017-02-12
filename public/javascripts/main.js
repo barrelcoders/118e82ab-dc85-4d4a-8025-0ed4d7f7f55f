@@ -224,9 +224,6 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                     });
                 }
                 function doGiftAnimation (args) {
-                    //if(!args.from.top || !args.from.left || !args.to.top || !args.to.left)
-                    //    return;
-
                     var animateDiv = $("<div style='height: 50px;width: 50px;background-size: contain;background-repeat:no-repeat;background-position:center;position: absolute;z-index: 99;"+args.image+"' ></div>").appendTo("body"),
                         animateFrom = args.from,
                         animateTo = args.to;
@@ -281,6 +278,12 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                         image: args.image,
                     });
                 });
+                var updatePlayerSuccess = scope.$on('updatePlayerSuccess', function(evt, args) {
+                    if(scope.player && scope.player.active && scope.player.playerInfo.id == args.playerId){
+                        scope.player.playerInfo[args.field] = args.value;
+                        scope.$apply();
+                    }
+                });
 
                 scope.share = function(event){
                     if(scope.player && scope.player.active){
@@ -300,12 +303,12 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                         );
                     }
                 };
-
                 scope.$on('$destroy', function(){
                     performBetAnimation();
                     performWinnerAnimation();
                     performBootAnimation();
                     performGiftAnimation();
+                    updatePlayerSuccess();
                 });
             }
         };
@@ -401,20 +404,19 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                     var from = $("input[value="+args.from+"]").offset(),
                         to = $("input[value="+args.to+"]").offset();
 
-
                     doGiftAnimation({
                         from: from,
                         to: to,
                         image: args.image,
                     });
                 });
-
-                scope.$on('$destroy', function(){
-                    performBetAnimation();
-                    performWinnerAnimation();
-                    performBootAnimation();
-                    performGiftAnimation();
+                var updatePlayerSuccess = scope.$on('updatePlayerSuccess', function(evt, args) {
+                    if(scope.player && scope.player.active && scope.player.playerInfo.id == args.playerId){
+                        scope.player.playerInfo[args.field] = args.value;
+                        scope.$apply();
+                    }
                 });
+
                 scope.disableActions = false;
                 scope.pack = function() {
                     scope.player.lastAction = "Packed";
@@ -507,6 +509,14 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                         updatePossibleBet();
                     }
                 });
+                scope.$on('$destroy', function(){
+                    performBetAnimation();
+                    performWinnerAnimation();
+                    performBootAnimation();
+                    performGiftAnimation();
+                    updatePlayerSuccess();
+                });
+
 
                 function setInitialValues() {
                     scope.blindCount = 0;
@@ -1361,8 +1371,8 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                 })
             );
         };
-        $scope.updatePlayerNameOnServer = function(tableId, playerId, name){
-            socket.emit('updatePlayerName', {tableId: tableId, playerId: playerId, name: name});
+        $scope.updatePlayerOnServer = function(tableId, playerId, field, value){
+            socket.emit('updatePlayerOnServer', {tableId: tableId, playerId: playerId, field: field, value: value});
         };
         $scope.openChangeBackgroundDialog = function($event){
             $mdDialog.show(
@@ -1810,11 +1820,11 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                     $scope.isChatWindowOpen = true;
                 }
             });
-            socket.on('updatePlayerNameSuccess', function(args){
+            socket.on('updatePlayerOnServerSuccess', function(args){
                 if(args.tableId != tableId)
                     return;
 
-
+                $scope.$broadcast('updatePlayerSuccess', args);
             });
             socket.on('sendGiftSuccess', function(args) {
                 if(args.tableId != tableId)
@@ -2103,34 +2113,13 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                 link:  BASE_URL+"#/userPlay/"+$scope.table.id+"/true",
                 //picture: BASE_URL+"/images/3-cards.png",
             });
-            /* FB.ui({
-                method: 'send',
-                message: "Come & Play my table at table 99 ",
-                link: BASE_URL+"#/userPlay/"+$scope.table.id+"/true",
-            });
-           FB.ui({
-                method: 'apprequests',
-                title: "Come & Play my game using below link",
-                message: "Come & Play my game at ("+BASE_URL+"#/userPlay/"+$scope.table.id+"/true)",
-                picture: 'https://screenshots.en.sftcdn.net/en/scrn/69690000/69690936/game-assistant-07-535x535.png',
-                max_recipients: $scope.table.max_players,
-            }, function(response){
-                if(response.to.length > 0 ){
-                    for(var i=0; i<= response.to.length-1; i++){
-                        FB.api('/me/apprequests/?request_ids='+toString(response.to[i]),
-                            function(response) {
-                                debugger;
-                            });
-                    }
-                }
-                else{
-                    alert('Select friends to send request');
-                }
-            });*/
         };
         $scope.openShopDialogFromMenu = function(){
             $scope.isMenuOpen = false;
             $scope.openShopDialog();
+        };
+        $scope.updatePlayerOnServer = function(tableId, playerId, field, value){
+            socket.emit('updatePlayerOnServer', {tableId: tableId, playerId: playerId, field: field, value: value});
         };
 
         function facebookSignIn(name, email, picture){
@@ -2619,7 +2608,7 @@ angular.module('table99.controllers').controller('nameDialogCtrl', ['$rootScope'
                         }
                         if(caller == 'game'){
                             $scope.currentPlayer.playerInfo.displayName = $scope.user.displayName = res.data.displayName;
-                            //$scope.updatePlayerNameOnServer($scope.tableId, $scope.currentPlayer.playerInfo.id, res.data.displayName);
+                            $scope.updatePlayerOnServer($scope.tableId, $scope.currentPlayer.playerInfo.id, 'displayName', res.data.displayName);
                         }
                         $mdDialog.hide();
                     }
@@ -2669,6 +2658,7 @@ angular.module('table99.controllers').controller('avatarDialogCtrl', ['$rootScop
                                 $scope.addAvatar = true;
                                 if(caller == 'game'){
                                     $scope.currentPlayer.playerInfo.avatar = res.data.avatar;
+                                    $scope.updatePlayerOnServer($scope.tableId, $scope.currentPlayer.playerInfo.id, 'avatar', res.data.avatar);
                                 }
                                 $mdDialog.hide();
                             }
@@ -2708,6 +2698,7 @@ angular.module('table99.controllers').controller('avatarDialogCtrl', ['$rootScop
                         $scope.user.avatar = res.data.avatar;
                         if(caller == 'game'){
                             $scope.currentPlayer.playerInfo.avatar = res.data.avatar;
+                            $scope.updatePlayerOnServer($scope.tableId, $scope.currentPlayer.playerInfo.id, 'avatar', res.data.avatar);
                         }
                         $mdDialog.hide();
                     }
@@ -2785,6 +2776,7 @@ angular.module('table99.controllers').controller('shopDialogCtrl', ['$rootScope'
                         $scope.user.chips = res.data.chips;
                         if(caller == 'game'){
                             $scope.currentPlayer.playerInfo.chips = res.data.chips;
+                            $scope.updatePlayerOnServer($scope.tableId, $scope.currentPlayer.playerInfo.id, 'chips', res.data.chips);
                         }
                         $mdDialog.hide();
                     }
@@ -2816,18 +2808,15 @@ angular.module('table99.controllers').controller('shareCtrl', ['$rootScope', '$s
             USER.chips -= gift.price;
             userService.updateBalance({id: USER.id, chips: USER.chips}).success(function(res) {
                 if (res.status == 'success') {
+                    $scope.$parent.currentPlayer.playerInfo.chips = USER.chips;
+                    $scope.$parent.updatePlayerOnServer($scope.$parent.tableId, $scope.$parent.currentPlayer.playerInfo.id, 'chips', USER.chips);
+
                     $scope.$parent.sendGift({
                         from: SOURCE,
                         to: DESTINATION,
                         image: gift.image,
                         tableId: $scope.$parent.tableId
                     });
-                    /*$scope.$broadcast('performGiftAnimation', {
-                        from: SOURCE,
-                        to: DESTINATION,
-                        image: gift.image,
-                        tableId: TABLE_ID
-                    });*/
                 }
 
                 if (res.status == 'failed') {
