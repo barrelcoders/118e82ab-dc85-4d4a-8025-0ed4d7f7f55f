@@ -240,7 +240,6 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                         animateDiv.animate(animateTo, 1000, function() {
                             $timeout(function(){
                                 animateDiv.remove();
-                                scope.$parent.giftAnimationInProgress = false;
                             }, 5000);
                         });
                     });
@@ -273,10 +272,6 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                     }
                 });
                 var performGiftAnimation = scope.$on('performGiftAnimation', function(evt, args) {
-                    //if (scope.player && scope.player.active) {
-
-                    if(scope.$parent.giftAnimationInProgress)
-                        return;
 
                     var from = $("input[value="+args.from+"]").offset(),
                         to = $("input[value="+args.to+"]").offset();
@@ -285,7 +280,6 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                         to: to,
                         image: args.image,
                     });
-                    //}
                 });
 
                 scope.share = function(event){
@@ -371,7 +365,6 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                         animateDiv.animate(animateTo, 1000, function() {
                             $timeout(function(){
                                 animateDiv.remove();
-                                scope.$parent.giftAnimationInProgress = false;
                             }, 5000);
                         });
                     });
@@ -405,10 +398,6 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
 
                 });
                 var performGiftAnimation = scope.$on('performGiftAnimation', function(evt, args) {
-
-                    if(scope.$parent.giftAnimationInProgress)
-                        return;
-
                     var from = $("input[value="+args.from+"]").offset(),
                         to = $("input[value="+args.to+"]").offset();
 
@@ -1211,7 +1200,6 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
         $scope.tableId = tableId;
         $scope.tableInfoOpen = false;
         $scope.isMenuOpen = false;
-        $scope.giftAnimationInProgress = false;
 
         if($localStorage){
             if(!$localStorage.USER){
@@ -1832,7 +1820,6 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                 if(args.tableId != tableId)
                     return;
 
-                $scope.giftAnimationInProgress = true;
                 $scope.$broadcast('performGiftAnimation', args);
 
             });
@@ -1887,7 +1874,6 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
         $scope.tableId = tableId;
         $scope.tableInfoOpen = false;
         $scope.isMenuOpen = false;
-        $scope.giftAnimationInProgress = false;
 
         function onError(){
             alert('Problem fetching facebook details, Please try again later');
@@ -2575,7 +2561,6 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                 if(args.tableId != tableId)
                     return;
 
-                $scope.giftAnimationInProgress = true;
                 $scope.$broadcast('performGiftAnimation', args);
 
             });
