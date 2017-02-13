@@ -132,7 +132,7 @@
         <script type="text/ng-template" id="side.player.html">
             <div ng-class="{winner:player.winner,turn:player.turn,packed:player.packed,active:player.active,inactive:!player.active,noplayer:!player}" class="side-player-outer"  ng-click="share()">
                 <div class="side-player-container">
-                    <input type="text" class="side-player-id" value="{{player.playerInfo.id}}" style="opacity:0"/>
+                    <input type="text" class="side-player-id" value="{{player.playerInfo.id}}" style="opacity:0;width:0;"/>
                     <div ng-show="player.deal" class="icon icon-deal"></div>
                     <div class="loser-text alert-warning">YOU LOSE <br> <i class="fa fa-rupee"></i> {{table.amount| number}} </div>
                     <div ng-show="!player" class="invite" ng-click="invitePlayer()"> <span class="icon icon-md users"></span><span class="text">Invite Friend</span></div>
@@ -151,7 +151,7 @@
         <script type="text/ng-template" id="main.player.html">
             <div ng-class="{winner:player.winner,turn:player.turn,packed:player.packed,active:player.active,inactive:!player.active}" class="current-player-outer">
                 <div class="current-player">
-                    <input type="text" class="current-player-id" value="{{player.playerInfo.id}}"style="opacity:0"/>
+                    <input type="text" class="current-player-id" value="{{player.playerInfo.id}}"style="opacity:0;width:0;"/>
                     <div ng-show="player.deal" class="icon icon-deal"></div>
                     <div class="winner-text alert-warning">YOU WIN <br/><i class="fa fa-rupee"></i> {{table.amount| number}} </div>
                     <div class="info">

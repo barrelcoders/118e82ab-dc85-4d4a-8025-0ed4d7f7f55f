@@ -77,6 +77,21 @@ body {
 a {
   color: #00B7FF;
 }
+form{
+  color: #FFF;
+}
+form input{
+  color: #000;
+}
+h2{
+  color: #FFF !important;
+}
+ul{
+  list-style-type: none;
+}
+audio{
+  display: none;
+}
 .animate-bet {
   display: none;
   position: absolute;
@@ -631,7 +646,7 @@ a {
 }
 .table.play .current-player-outer {
   width: 145px;
-  height: 175px;
+  height: 200px;
   margin: auto;
   border: 3px solid #8E3302;
   border-radius: 5px;
@@ -762,6 +777,44 @@ a {
   text-align: center;
 }
 
+
+.table-99.home-layout{
+  margin: 0;
+  padding: 0;
+  background: #9a1da7 url(../images/glow-particle.png) center no-repeat;
+  box-shadow: inset 0 0 200px 110px #000;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  overflow: hidden;
+}
+.table-99.body-layout{
+  margin: 0;
+  padding: 0;
+  background-image:  url(../images/glow-particle.png), url(../images/violent-bg.jpg);
+  box-shadow: inset 0 0 200px 110px #000;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  overflow:hidden;
+}
+.table-99.game-layout{
+  margin: 0;
+  padding: 0;
+  background: url(../images/violent-bg.jpg);
+  box-shadow: inset 0 0 200px 110px #000;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  overflow:hidden;
+}
+
 .background-container{
   position: relative;
   display: block;
@@ -769,7 +822,7 @@ a {
   width: 560px;
   height: 120px;
 }
-.background{
+.background-container .background{
   height: 100px;
   display: inline-block;
   width: 100px;
@@ -778,6 +831,7 @@ a {
   margin-right: 10px;
   cursor: pointer;
 }
+
 .character-container{
   position: relative;
   display: block;
@@ -785,10 +839,77 @@ a {
   height: 226px;
 }
 .character-container .slick-next, .character-container .slick-prev,
-.background-container .slick-next, .background-container .slick-prev
-{
+.background-container .slick-next, .background-container .slick-prev {
   top: 30px;
 }
+.character-container .character{
+  height: 100px !important;
+  display: inline-block;
+  width: 100px !important;
+  border-radius: 11px;
+  box-shadow: 4px 4px 3px 0px #000;
+  margin: 10px;
+  cursor: pointer;
+  float: left;
+}
+.character-container .character.add{
+  border: none;
+  box-shadow: inset 1px 1px 0px 1px #142A01, inset -1px -1px 0px 1px #9CA605;
+  background: #1D4001;
+  position: relative;
+}
+.character-container .character.add > span, .character.add.uploadingStarted > p{
+  position: absolute;
+  font-size: 60px;
+  left: 30px;
+  top: 0;
+  color: #9CA605;
+}
+.character-container .character.add > p, .character.add.uploadingStarted > span{
+  display: none;
+}
+.character-container .character img{
+  height: 100px;
+  width: 100px;
+}
+.character-container > div {
+  height: 350px;
+  overflow-y: auto;
+}
+
+.gifts-container {
+  width: 500px;
+  height: 200px;
+  overflow-y: auto;
+}
+.gifts-container .gift-item{
+  height: 90px;
+  width: 90px;
+  padding: 50px 10px;
+  margin-right: 20px;
+  background: url(../images/table-box.png) center no-repeat;
+  background-size: contain;
+  position: relative;
+  display: inline-block;
+  float: left;
+}
+.gifts-container .gift-item > div {
+  position: absolute;
+  top: 20px;
+  left: 25px;
+  height: 40px;
+  width: 40px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.gifts-container .gift-item > span {
+  margin: 10px 0;
+  display: block;
+  text-align: center;
+  width: 65px;
+}
+
 .user-avatar{
   position: absolute;
   right: 70px;
@@ -816,18 +937,6 @@ a {
   color: #fff67c;
   font-weight: bold;
   font-size: 20px;
-}
-form{
-  color: #FFF;
-}
-form input{
-  color: #000;
-}
-h2{
-  color: #FFF !important;
-}
-ul{
-  list-style-type: none;
 }
 
 .shop-container{
@@ -873,6 +982,7 @@ ul{
   bottom: -35px;
   left: 55px;
 }
+
 .table-holder{
   height: 300px;
   width: 775px;
@@ -885,7 +995,7 @@ ul{
 .table-holder .slick-next, .table-holder .slick-prev {
   top: 60px;
 }
-.game-table{
+.table-holder .game-table{
   height: 200px;
   width: 200px;
   border-radius: 5px;
@@ -897,34 +1007,34 @@ ul{
   background-size: contain;
   position: relative;
 }
-.game-table.custom{
+.table-holder .game-table.custom{
   background: url(../images/table-o-box.png) center no-repeat;
 }
-.game-table .name{
+.table-holder .game-table .name{
   display: block;
   text-align: center;
   font-weight: bold;
 }
-.game-table .name.large{
+.table-holder .game-table .name.large{
   font-size: 38px;
   display: block;
   overflow: auto;
   text-shadow: 2px 2px #000;
 }
-.game-table .boot-amount{
+.table-holder .game-table .boot-amount{
   font-size: 45px;
   display: block;
   text-align: center;
   text-shadow: 2px 2px #000;
 }
-.game-table .max-players{
+.table-holder .game-table .max-players{
   display: block;
   font-weight: bold;
   font-style: italic;
   font-size: 12px;
   text-align: center;
  }
-.game-table button{
+.table-holder .game-table button{
     position: absolute;
     bottom: -35px;
     left: 68px;
@@ -979,14 +1089,6 @@ ul{
   padding-right: 10px;
   color: #eee;
 }
-
-.menu-window ul li .menu-item {
-  color: #eee;
-  font-size: 20px;
-  text-align: center;
-  cursor: pointer;
-  user-select: none;
-}
 .chat-window ul li .message {
   padding-left: 10px;
   white-space: pre;
@@ -1040,42 +1142,14 @@ ul{
   -ms-user-select: none;
   user-select: none;
 }
-.table-99.home-layout{
-  margin: 0;
-  padding: 0;
-  background: #9a1da7 url(../images/glow-particle.png) center no-repeat;
-  box-shadow: inset 0 0 200px 110px #000;
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  top: 0;
-  overflow: hidden;
+.menu-window ul li .menu-item {
+  color: #eee;
+  font-size: 20px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
 }
-.table-99.body-layout{
-  margin: 0;
-  padding: 0;
-  background-image:  url(../images/glow-particle.png), url(../images/violent-bg.jpg);
-  box-shadow: inset 0 0 200px 110px #000;
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  top: 0;
-  overflow:hidden;
-}
-.table-99.game-layout{
-  margin: 0;
-  padding: 0;
-  background: url(../images/violent-bg.jpg);
-  box-shadow: inset 0 0 200px 110px #000;
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  top: 0;
-  overflow:hidden;
-}
+
 .game-layout .bottom-cards{
   position: absolute;
   right: 0;
@@ -1350,16 +1424,42 @@ ul{
   height: 600px;
   padding: 60px;
 }
-.window.signin {
-  background: url(../images/window.png) no-repeat;
-  background-size: contain;
-}
-.window.signup, .window.settings, .window.shop, .window.createTable {
+.window.signin, .window.signup, .window.settings, .window.shop, .window.createTable {
   width: 600px;
   height: 600px;
   padding: 60px;
-  background: url(../images/window.png) no-repeat;
+  background-image: url(../images/win-upper.png), url(../images/win-bottom.png);
+  background-position: center top, 0 bottom;
+  background-color: transparent !important;
+  background-repeat: no-repeat, no-repeat;
   background-size: contain;
+}
+.window.signin > div, .window.signup > div, .window.createTable > div {
+  background: url(../images/win-middle.png);
+  background-repeat: repeat-y;
+  background-size: contain;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 85px;
+}
+.window.signin form, .window.signup form, .window.createTable form {
+  position: relative;
+  display: block;
+  width: 450px;
+  margin: 0 auto;
+}
+.window.signin form .button-bar, .window.signup form .button-bar .window.createTable form .button-bar{
+  text-align: right;
+}
+.window.signin{
+  height: 405px;
+}
+.window.signup{
+  height: 525px;
+}
+.window.createTable{
+  height: 510px;
 }
 .window .heading{
   font-weight: bold;
@@ -1375,7 +1475,7 @@ ul{
   height: 200px;
   background: url(../images/3-coins.png) no-repeat;
   background-size: contain;
-  bottom: 15px;
+  bottom: -150px;
   left: -50px;
 }
 
@@ -1486,74 +1586,4 @@ md-dialog.share-dialog md-dialog-content{
 md-dialog h2{
   text-align: center;
   margin: 0;
-}
-audio{
-  display: none;
-}
-
-.character{
-  height: 100px !important;
-  display: inline-block;
-  width: 100px !important;
-  border-radius: 11px;
-  box-shadow: 4px 4px 3px 0px #000;
-  margin: 10px;
-  cursor: pointer;
-  float: left;
-}
-.character.add{
-  border: none;
-  box-shadow: inset 1px 1px 0px 1px #142A01, inset -1px -1px 0px 1px #9CA605;
-  background: #1D4001;
-  position: relative;
-}
-.character.add > span, .character.add.uploadingStarted > p{
-  position: absolute;
-  font-size: 60px;
-  left: 30px;
-  top: 0;
-  color: #9CA605;
-}
-.character.add > p, .character.add.uploadingStarted > span{
-  display: none;
-}
-.character img{
-  height: 100px;
-  width: 100px;
-}
-.character-container > div {
-  height: 350px;
-  overflow-y: auto;
-}
-.gifts-container {
-  width: 500px;
-  height: 200px;
-  overflow-y: auto;
-}
-.gift-item{
-  height: 90px;
-  width: 90px;
-  padding: 50px 10px;
-  margin-right: 20px;
-  background: url(../images/table-box.png) center no-repeat;
-  background-size: contain;
-  position: relative;
-  display: inline-block;
-  float: left;
-}
-.gift-item > div {
-  position: absolute;
-  top: 20px;
-  left: 25px;
-  height: 40px;
-  width: 40px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-.gift-item > span {
-  margin: 10px 0;
-  display: block;
-  text-align: center;
-  width: 65px;
 }

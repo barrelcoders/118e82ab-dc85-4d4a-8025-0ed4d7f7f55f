@@ -5,23 +5,25 @@
 </header>
 <div class="glow-particles"></div>
 <div class="window signup" ng-controller='signUpCtrl'>
-	<h2 class="heading">Sign Up</h2>
-	<div class="three-coins"></div>
-	<form class="form">
-		<div>
-			<input type="text" id="txtName" ng-model="guest.name" placeholder="Enter name">
-		</div>
-		<div>
-			<input type="email" id="txtEmail" ng-model="guest.email" placeholder="Enter email">
-		</div>
-		<div>
-			<input type="password" id="txtPassword" ng-model="guest.password" placeholder="Confirm Password">
-		</div>
-		<div>
-			<input type="password"  id="txtConfirmPassword" ng-model="guest.cpassword" placeholder="Password">
-		</div>
-		<div>
-			<button type="button" class="btn-helper" ng-click="signup()">SIGN UP</button>
-		</div>
-	</form>
+	<div>
+		<h2 class="heading">Sign Up</h2>
+		<div class="three-coins"></div>
+		<form class="form">
+			<div>
+				<input type="text" id="txtName" ng-model="guest.name" placeholder="Enter name">
+			</div>
+			<div>
+				<input type="email" id="txtEmail" ng-model="guest.email" placeholder="Enter email">
+			</div>
+			<div>
+				<input type="password" id="txtPassword" ng-model="guest.password" placeholder="Confirm Password">
+			</div>
+			<div>
+				<input type="password"  id="txtConfirmPassword" ng-model="guest.cpassword" placeholder="Password">
+			</div>
+			<div class="button-bar">
+				<button type="button" class="btn-helper" ng-click="signup()">SIGN UP</button>
+			</div>
+		</form>
+	</div>
 </div>
