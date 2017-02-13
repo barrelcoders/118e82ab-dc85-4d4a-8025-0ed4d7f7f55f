@@ -6,7 +6,7 @@ var multer = require('multer');
 var updatedFileName = "";
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, './code/avatars/')
+        cb(null, './avatars/')
     },
     filename: function (req, file, cb) {
         updatedFileName = Date.now() + '.' + file.originalname.split('.')[file.originalname.split('.').length -1];

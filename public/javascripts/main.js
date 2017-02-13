@@ -2642,7 +2642,7 @@ angular.module('table99.controllers').controller('avatarDialogCtrl', ['$rootScop
                 }).then(function (resp) {
                     $scope.uploadingStart = false;
                     if(resp.data.status == 'success'){
-                        var avatar = 'background: url('+BASE_URL+'/avatars/getAvatar/?r='+resp.data.filename+') no-repeat;';
+                        var avatar = 'background: url('+BASE_URL+'avatars/getAvatar/?r='+resp.data.filename+') no-repeat;';
                         var userId = $scope.user.id;
                         userService.updateAvatar({
                             id: userId,
