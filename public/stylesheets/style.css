@@ -1587,3 +1587,46 @@ md-dialog h2{
   text-align: center;
   margin: 0;
 }
+
+/*and (-webkit-min-device-pixel-ratio: 3) or (-webkit-min-device-pixel-ratio: 2)*/
+
+@media only screen and (max-device-width: 736px) and (orientation: landscape)  {
+  .window{
+    margin: 50px auto;
+  }
+  md-dialog.avatar-dialog {
+    height: 420px;
+  }
+  md-dialog.avatar-dialog md-dialog-content{
+    height: 280px;
+    overflow: hidden;
+  }
+
+  .table.play .seat{
+    height: 100px;
+  }
+  .table.play .table-bet {
+    top: 100px;
+  }
+  .table.play .cards{
+    top: 80px;
+  }
+  .table.play .side-player.left .cards{
+    left: auto;
+  }
+  .game-area{
+    background-size: 50%;
+  }
+
+  .chat-window, .menu-window, .chat-window footer textarea{
+    width: 100%;
+  }
+  .chat-window footer input[type="button"]{
+    right: 15px;
+    left: auto;
+    bottom: 0;
+  }
+  .chat-window ul li, .menu-window ul li{
+    width: 95%;
+  }
+}
