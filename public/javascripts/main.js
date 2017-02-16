@@ -775,7 +775,7 @@ angular.module('table99.controllers').controller('table99Ctrl', ['$scope', 'card
 angular.module('table99.controllers').controller('homeCtrl', ['$rootScope', '$scope', '$timeout', '$state', 'layoutService',
     function($rootScope, $scope, $timeout, $state, layoutService) {
         $rootScope.layout = layoutService.layoutClass.homeLayout;
-        $rootScope.background = {'background-image': 'none' };
+        //$rootScope.background = {'background-image': 'none' };
         $timeout(function(){
             $state.go('signin',{});
         }, 5000);
@@ -2783,7 +2783,7 @@ angular.module('table99.controllers').controller('shopDialogCtrl', ['$rootScope'
             soundService.buttonClick();
             if($scope.user){
                 var userId = $scope.user.id;
-                var chips = $scope.user.chips + item.credit_amount - item.debit_amount;
+                var chips = $scope.user.chips + (item.credit_amount - item.debit_amount);
                 userService.updateBalance({
                     id: userId,
                     chips: chips
