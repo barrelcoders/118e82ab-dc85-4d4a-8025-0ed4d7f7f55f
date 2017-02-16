@@ -910,6 +910,17 @@ audio{
   width: 65px;
 }
 
+.rules-container{
+  width: 540px;
+  padding: 50px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 265px;
+}
+.rules-container > img {
+  width: 450px;
+}
+
 .user-avatar{
   position: absolute;
   right: 70px;
@@ -1587,7 +1598,12 @@ md-dialog h2{
   text-align: center;
   margin: 0;
 }
-
+md-dialog.rules-dialog{
+  height: 450px;
+}
+md-dialog.rules-dialog md-dialog-content{
+  top: 90px;
+}
 /*and (-webkit-min-device-pixel-ratio: 3) or (-webkit-min-device-pixel-ratio: 2)*/
 
 @media only screen and (max-device-width: 736px) and (orientation: landscape)  {

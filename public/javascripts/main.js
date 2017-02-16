@@ -55,6 +55,13 @@ angular.module('table99', [
                 };
             }
         });
+        $mdDialogProvider.addPreset('rules', {
+            options: function() {
+                return {
+                    templateUrl:"../templates/rulesDialog.html",
+                };
+            }
+        });
 
         $urlRouterProvider.otherwise("/home");
 
@@ -1419,6 +1426,13 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
 
             }
         }
+        $scope.openRulesDialog = function(args){
+            $mdDialog.show(
+                $mdDialog.rules({
+                    parent: angular.element(document.body),
+                })
+            );
+        };
 
         function loadChats(){
             tableService.loadChats({
@@ -2120,6 +2134,13 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
         };
         $scope.updatePlayerOnServer = function(tableId, playerId, field, value){
             socket.emit('updatePlayerOnServer', {tableId: tableId, playerId: playerId, field: field, value: value});
+        };
+        $scope.openRulesDialog = function(args){
+            $mdDialog.show(
+                $mdDialog.rules({
+                    parent: angular.element(document.body),
+                })
+            );
         };
 
         function facebookSignIn(name, email, picture){
