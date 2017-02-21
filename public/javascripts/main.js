@@ -138,7 +138,7 @@ angular.module('table99', [
     }(document));
 
 })
-angular.module('table99.config', []).constant('BASE_URL','http://ec2-54-255-190-240.ap-southeast-1.compute.amazonaws.com:3000/');
+angular.module('table99.config', []).constant('BASE_URL','http://localhost:3000/');
 angular.module('table99.controllers', []);
 angular.module('table99.directives', []);
 angular.module('table99.services', []);
@@ -1664,7 +1664,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                 }
             });
             socket.on('playerPacked', function(args) {
-                if(args.tabbleId != tableId)
+                if(args.tableId != tableId)
                     return;
 
                 $scope.table = args.table;
@@ -2397,7 +2397,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                 }
             });
             socket.on('playerPacked', function(args) {
-                if(args.tabbleId != tableId)
+                if(args.tableId != tableId)
                     return;
 
                 $scope.table = args.table;
