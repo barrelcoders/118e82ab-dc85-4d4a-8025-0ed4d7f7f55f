@@ -14,6 +14,7 @@ var storage = multer.diskStorage({
     }
 });
 var upload = multer({ storage: storage }).single('file');
+var dateTime = require('node-datetime');
 
 router.post('/uploadAvatar', function(req, res) {
     upload(req,res,function(err){
@@ -101,7 +102,7 @@ router.post('/signup', function(req, res) {
                     email: req.body.email,
                     password: req.body.password,
                     chips: 2500000,
-                    avatar: 'background: url(images/default_avatar.jpg);'
+                    avatar: 'character-1'
                 };
                 DAL.db.users.insert(user, function(result){
 					res.json({
@@ -228,6 +229,115 @@ router.post('/get', function(req, res) {
     } else {
         res.json({
             status: 'failed'
+        });
+    }
+});
+router.post('/getBonus', function(req, res) {
+    var bonus, date, yesterday;
+    if (req.body.user) {
+        date = dateTime.create();
+        DAL.db.bonus.find(req.body.user, date.format('Y-m-d'), function(todayResults){
+            if (!todayResults || todayResults.length === 0) {
+                date.offsetInDays(-1);
+                yesterday = date;
+                DAL.db.bonus.find(req.body.user, yesterday.format('Y-m-d'), function(yesterdayResults){
+                    if (!yesterdayResults || yesterdayResults.length === 0) {
+                        bonus = {
+                            user: req.body.user,
+                            bonus: 10000,
+                        };
+                        res.json({
+                            'status': 'success',
+                            data: bonus
+                        });
+                    } else {
+                        bonus = yesterdayResults[0];
+                        bonus.received = dateTime.create(bonus.received).format('Y-m-d H:M:s');
+                        res.json({
+                            'status': 'failed',
+                            data: bonus,
+                            message: 'ALREADY_CREDITED'
+                        });
+                    }
+                }, function(err){
+                    res.json({
+                        status: 'failed',
+                        message: 'PROBLEM_FETCHING_BONUS'
+                    });
+                });
+            } else {
+                bonus = todayResults[0];
+                bonus.received = dateTime.create(bonus.received).format('Y-m-d H:M:S');
+                res.json({
+                    'status': 'failed',
+                    data: bonus,
+                    message: 'ALREADY_CREDITED'
+                });
+            }
+        }, function(err){
+            res.json({
+                status: 'failed',
+                message: 'PROBLEM_FETCHING_BONUS'
+            });
+        });
+    } else {
+        res.json({
+            status: 'failed',
+            message: 'PROBLEM_FETCHING_BONUS'
+        });
+    }
+});
+router.post('/creditBonus', function(req, res) {
+    var bonus, date;
+    if (req.body.user && req.body.bonus) {
+        DAL.db.bonus.findByUser(req.body.user, function(results){
+            if (!results || results.length === 0) {
+                    bonus = {
+                        amount: req.body.bonus,
+                        received: dateTime.create().format('Y-m-d H:M:S'),
+                        user: req.body.user
+                    };
+                    DAL.db.bonus.insert(bonus.user, bonus.received, bonus.amount, function(results){
+                        res.json({
+                            'status': 'success',
+                            data: bonus
+                        });
+                    },
+                    function(err){
+                        res.json({
+                            status: 'failed',
+                            message: 'PROBLEM_CREDITING_BONUS'
+                        });
+                    });
+            } else {
+                bonus = {
+                    amount: req.body.bonus,
+                    received: dateTime.create().format('Y-m-d H:M:S'),
+                    user: req.body.user
+                };
+                DAL.db.bonus.update(bonus.user, bonus.received, bonus.amount, function(results){
+                        res.json({
+                            'status': 'success',
+                            data: bonus
+                        });
+                    },
+                    function(err){
+                        res.json({
+                            status: 'failed',
+                            message: 'PROBLEM_CREDITING_BONUS'
+                        });
+                    });
+            }
+        }, function(err){
+            res.json({
+                status: 'failed',
+                message: 'PROBLEM_CREDITING_BONUS'
+            });
+        });
+    } else {
+        res.json({
+            status: 'failed',
+            message: 'PROBLEM_CREDITING_BONUS'
         });
     }
 });

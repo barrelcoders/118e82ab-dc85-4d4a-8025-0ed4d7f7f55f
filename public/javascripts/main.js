@@ -293,6 +293,7 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                     }
                 });
 
+
                 scope.share = function(event){
                     if(scope.player && scope.player.active){
                         $mdDialog.show(
@@ -310,6 +311,16 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                             })
                         );
                     }
+                };
+                scope.playerAvatarClass = function(player){
+                    var className = '';
+                    if(player && player.active){
+                        className = (player.playerInfo.avatar.indexOf('character') > -1) ? player.playerInfo.avatar : 'custom-character';
+                    }
+                    else{
+                        null;
+                    }
+                    return className;
                 };
                 scope.$on('$destroy', function(){
                     performBetAnimation();
@@ -492,6 +503,16 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                 scope.minus = function() {
                     scope.changeBet('-');
                 }
+                scope.playerAvatarClass = function(player){
+                    var className = '';
+                    if(player && player.active){
+                        className = (player.playerInfo.avatar.indexOf('character') > -1) ? player.playerInfo.avatar : 'custom-character';
+                    }
+                    else{
+                        null;
+                    }
+                    return className;
+                };
                 scope.$on('startNew', function(args) {
                     if (scope.player && scope.player.active) {
                         setInitialValues();
@@ -732,6 +753,12 @@ angular.module('table99.services').factory('userService', ['$http',
             },
             fbsignin: function(params) {
                 return $http.post('/user/fbsignin', params);
+            },
+            getBonus: function(params) {
+                return $http.post('/user/getBonus', params);
+            },
+            creditBonus: function(params) {
+                return $http.post('/user/creditBonus', params);
             }
         };
     }
@@ -948,14 +975,17 @@ angular.module('table99.controllers').controller('signInCtrl', ['$rootScope', '$
     }
 ]);
 angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$localStorage', '$scope', 'tableService',
-    '$state', 'layoutService', 'soundService', '$mdDialog',
-    function($rootScope, $localStorage, $scope, tableService, $state, layoutService, soundService, $mdDialog) {
+    '$state', 'layoutService', 'soundService', '$mdDialog', 'userService','$interval',
+    function($rootScope, $localStorage, $scope, tableService, $state, layoutService, soundService, $mdDialog, userService, $interval) {
         $rootScope.layout = layoutService.layoutClass.gameLayout;
+        $scope.bonusObj = {};
+        $scope.bonusCredited = false;
         $scope.background = '';
         $scope.user = {};
         $scope.tables = [];
         $scope.customTables = [];
         $scope.isLoading = false;
+        $scope.nextBonusDateString = null;
 
         if($localStorage){
             if(!$localStorage.USER){
@@ -976,10 +1006,10 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
         $scope.user.avatar = $scope.user.avatar ? $scope.user.avatar : 'background: url(images/default_avatar.jpg);';
         $scope.user.displayName = $scope.user.displayName ? $scope.user.displayName : 'Guest';
         $scope.user.chips = $scope.user.chips ? $scope.user.chips : '0';
-        $scope.isCustomCharacter = !($scope.user.avatar.indexOf('characters.jpg') > -1);
+        $scope.characterClass = ($scope.user.avatar.indexOf('character') > -1) ? $scope.user.avatar : 'custom-character';
 
         $scope.$watch('user.avatar', function() {
-            $scope.isCustomCharacter = !($scope.user.avatar.indexOf('characters.jpg') > -1);
+            $scope.characterClass = ($scope.user.avatar.indexOf('character') > -1) ? $scope.user.avatar : 'custom-character';
         });
         $scope.openUpdateAvatarDialog = function($event){
             soundService.alert();
@@ -1087,8 +1117,67 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
             soundService.buttonClick();
             $state.go('createTable',{});
         };
+        $scope.creditBonus = function(){
+            userService.creditBonus({
+                user: $scope.user.id,
+                bonus: $scope.bonusObj.bonus
+            }).success(function(res) {
+                if (res.status == 'success') {
+                    $scope.bonusObj = res.data;
+                    userService.updateBalance({
+                        id: $scope.user.id,
+                        chips: $scope.user.chips + $scope.bonusObj.amount
+                    }).success(function(res) {
+                        if (res.status == 'success') {
+                            if($localStorage.USER){
+                                var localStorageData = $localStorage.USER;
+                                localStorageData.chips = res.data.chips;
+                                $localStorage.USER = localStorageData;
+                            }
+                            $scope.user.chips = res.data.chips;
+                            var currentDate = new Date($scope.bonusObj.received).getTime();
+                            var nextDate = new Date($scope.bonusObj.received);
+                            nextDate.setDate(nextDate.getDate() + 1);
+                            nextDate = nextDate.getTime();
+                            var seconds = (nextDate - currentDate)/1000;
+                            var interval = $interval(function() {
+                                var days = Math.floor(seconds/24/60/60),
+                                    hoursLeft = Math.floor((seconds) - (days*86400)),
+                                    hours = Math.floor(hoursLeft/3600),
+                                    minutesLeft = Math.floor((hoursLeft) - (hours*3600)),
+                                    minutes = Math.floor(minutesLeft/60),
+                                    remainingSeconds = seconds % 60;
+
+                                if (remainingSeconds < 10)
+                                    remainingSeconds = "0" + remainingSeconds;
+
+                                $scope.nextBonusDateString = parseInt(hours)+"h "+parseInt(minutes)+"m "+parseInt(remainingSeconds)+"s";
+
+                                if(seconds == 0){
+                                    $interval.cancel(interval);
+                                    $scope.bonusCredited = false;
+                                }
+                                else seconds--;
+                            }, 1000);
+                            $scope.bonusCredited = true;
+                        }
+                        if (res.status == 'failed') {
+                            if(res.message == "PROBLEM_UPDATING_BALANCE"){
+                                alert("Problem in crediting bonus, Please try again later");
+                            }
+                        }
+                    })
+                }
+                if (res.status == 'failed') {
+                    if(res.message == 'PROBLEM_CREDITING_BONUS'){
+                        alert("Problem in crediting bonus, Please try again later");
+                    }
+                }
+            });
+        };
 
         findTables();
+        findBonus();
 
         function findTables(){
             if($scope.isLoading)
@@ -1136,6 +1225,49 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
                 }
             })
         }
+        function findBonus(){
+            userService.getBonus({
+                user: $scope.user.id
+            }).success(function(res) {
+                if (res.status == 'success') {
+                    $scope.bonusObj = res.data;
+                }
+
+                if (res.status == 'failed') {
+                    if(res.message == 'PROBLEM_FETCHING_BONUS'){
+                    }
+                    if(res.message == 'ALREADY_CREDITED'){
+                        $scope.bonusObj = res.data;
+                        var currentDate = new Date($scope.bonusObj.received).getTime();
+                        var nextDate = new Date();
+                        nextDate.setDate(nextDate.getDate() + 1);
+                        nextDate = nextDate.getTime();
+                        var seconds = (nextDate - currentDate)/1000;
+                        var interval = $interval(function() {
+                            var days = Math.floor(seconds/24/60/60),
+                                hoursLeft = Math.floor((seconds) - (days*86400)),
+                                hours = Math.floor(hoursLeft/3600),
+                                minutesLeft = Math.floor((hoursLeft) - (hours*3600)),
+                                minutes = Math.floor(minutesLeft/60),
+                                remainingSeconds = seconds % 60;
+
+                            if (remainingSeconds < 10)
+                                remainingSeconds = "0" + remainingSeconds;
+
+                            $scope.nextBonusDateString = parseInt(hours)+"h "+parseInt(minutes)+"m "+parseInt(remainingSeconds)+"s";
+
+                            if(seconds == 0){
+                                $interval.cancel(interval);
+                                $scope.bonusCredited = false;
+                            }
+                            else seconds--;
+                        }, 1000);
+                        $scope.bonusCredited = true;
+                    }
+                }
+            });
+        }
+
     }
 ]);
 angular.module('table99.controllers').controller('createTableCtrl', ['$rootScope', '$scope', '$timeout', '$state', 'layoutService',
@@ -1359,10 +1491,10 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
         $scope.user.avatar = $scope.user.avatar ? $scope.user.avatar : 'background: url(images/default_avatar.jpg);';
         $scope.user.displayName = $scope.user.displayName ? $scope.user.displayName : 'Guest';
         $scope.user.chips = $scope.user.chips ? $scope.user.chips : '0';
-        $scope.isCustomCharacter = !($scope.user.avatar.indexOf('characters.jpg') > -1);
+        $scope.characterClass = ($scope.user.avatar.indexOf('character') > -1) ? $scope.user.avatar : 'custom-character';
 
         $scope.$watch('user.avatar', function() {
-            $scope.isCustomCharacter = !($scope.user.avatar.indexOf('characters.jpg') > -1);
+            $scope.characterClass = ($scope.user.avatar.indexOf('character') > -1) ? $scope.user.avatar : 'custom-character';
         });
         $scope.openUpdateAvatarDialog = function($event){
             soundService.alert();
@@ -2092,10 +2224,10 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
         $scope.user.avatar = $scope.user.avatar ? $scope.user.avatar : 'background: url(images/default_avatar.jpg);';
         $scope.user.displayName = $scope.user.displayName ? $scope.user.displayName : 'Guest';
         $scope.user.chips = $scope.user.chips ? $scope.user.chips : '0';
-        $scope.isCustomCharacter = !($scope.user.avatar.indexOf('characters.jpg') > -1);
+        $scope.characterClass = ($scope.user.avatar.indexOf('character') > -1) ? $scope.user.avatar : 'custom-character';
 
         $scope.$watch('user.avatar', function() {
-            $scope.isCustomCharacter = !($scope.user.avatar.indexOf('characters.jpg') > -1);
+            $scope.characterClass = ($scope.user.avatar.indexOf('character') > -1) ? $scope.user.avatar : 'custom-character';
         });
         $scope.openUpdateAvatarDialog = function($event){
             soundService.alert();
@@ -2698,7 +2830,7 @@ angular.module('table99.controllers').controller('avatarDialogCtrl', ['$rootScop
                 }).then(function (resp) {
                     $scope.uploadingStart = false;
                     if(resp.data.status == 'success'){
-                        var avatar = 'background: url('+BASE_URL+'avatars/getAvatar/?r='+resp.data.filename+') no-repeat;';
+                        var avatar = BASE_URL+'avatars/getAvatar/?r='+resp.data.filename;
                         var userId = $scope.user.id;
                         userService.updateAvatar({
                             id: userId,
@@ -2740,7 +2872,7 @@ angular.module('table99.controllers').controller('avatarDialogCtrl', ['$rootScop
             soundService.buttonClick();
             if($scope.user){
                 var userId = $scope.user.id;
-                var avatar = object.target.attributes.style.value;
+                var avatar = object.target.attributes.image.value;
                 userService.updateAvatar({
                     id: userId,
                     avatar: avatar

@@ -472,8 +472,8 @@ audio{
   display: none;
 }
 .table.play .side-player-outer {
-  width: 120px;
-  height: 145px;
+  width: 145px;
+  height: 175px;
   margin: auto;
   padding: 10px;
   border: 3px Solid rgb(38, 102, 157);
@@ -533,14 +533,14 @@ audio{
   left: 89px;
 }
 .table.play .side-player .player-info .pic {
-  position: absolute;
-  width: 70px;
-  height: 70px;
-  border: 3px Solid #26669D;
-  top: 18px;
-  left: 12px;
-  background-position: -668px -140px;
-  border-radius: 5px;
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border: 3px Solid #26669D;
+    top: 18px;
+    left: 12px;
+    background-position: -668px -140px;
+    border-radius: 11px;
 }
 .table.play .side-player .player-info .pic.custom {
   background-size: 100% 100% !important;
@@ -549,7 +549,7 @@ audio{
   background-size: inherit !important;
 }
 .table.play .side-player .player-info .last-action {
-  top: 107px;
+  top: 140px;
   height: 20px;
   left: 0;
   position: absolute;
@@ -561,7 +561,7 @@ audio{
   position: absolute;
   top: -5px;
   height: 23px;
-  width: 115px;
+  width: 145px;
   overflow: hidden;
   color: #FFF;
   text-transform: uppercase;
@@ -569,8 +569,8 @@ audio{
 }
 .table.play .side-player .player-info .last-bet {
   position: absolute;
-  top: 90px;
-  width: 115px;
+  top: 120px;
+  width: 145px;
   color: #FFF;
   left: -10px;
 }
@@ -876,7 +876,126 @@ audio{
   height: 250px;
   overflow-y: auto;
 }
-
+.character-1{
+    background: url(../images/characters.jpg) -22px -21px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-2{
+    background: url(../images/characters.jpg) -172px -21px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-3{
+    background: url(../images/characters.jpg) -318px -21px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-4{
+    background: url(../images/characters.jpg) -469px -21px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-5{
+    background: url(../images/characters.jpg) -617px -21px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-6{
+    background: url(../images/characters.jpg) -26px -174px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-7{
+    background: url(../images/characters.jpg) -188px -170px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-8{
+    background: url(../images/characters.jpg) -326px -188px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-9{
+    background: url(../images/characters.jpg) -484px -188px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-10{
+    background: url(../images/characters.jpg) -626px -174px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-11{
+    background: url(../images/characters.jpg) -33px -330px  no-repeat !important;
+    background-size: inherit !important;
+}
+.character-12{
+    background: url(../images/characters.jpg) -166px -330px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-13{
+    background: url(../images/characters.jpg) -328px -330px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-14{
+    background: url(../images/characters.jpg) -472px -330px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-15{
+    background: url(../images/characters.jpg) -625px -330px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-16{
+    background: url(../images/characters.jpg) -22px -500px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-17{
+    background: url(../images/characters.jpg) -170px -500px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-18{
+    background: url(../images/characters.jpg) -320px -500px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-19{
+    background: url(../images/characters.jpg) -470px -500px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-20{
+    background: url(../images/characters.jpg) -622px -500px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-21{
+    background: url(../images/characters.jpg) -21px -670px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-22{
+    background: url(../images/characters.jpg) -168px -670px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-23{
+    background: url(../images/characters.jpg) -318px -670px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-24{
+    background: url(../images/characters.jpg) -465px -670px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-25{
+    background: url(../images/characters.jpg) -612px -670px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-26{
+    background: url(../images/characters.jpg) -26px -837px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-27{
+    background: url(../images/characters.jpg) -175px -837px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-28{
+    background: url(../images/characters.jpg) -327px -837px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-29{
+    background: url(../images/characters.jpg) -475px -837px no-repeat !important;
+    background-size: inherit !important;
+}
+.character-30{
+    background: url(../images/characters.jpg) -625px -837px no-repeat !important;
+    background-size: inherit !important;
+}
 .gifts-container {
   width: 500px;
   height: 200px;
@@ -921,7 +1040,20 @@ audio{
 .rules-container > img {
   width: 450px;
 }
-
+.bonus-container {
+  background: rgba(0,0,0,0.5);
+  font-size: 50px;
+  border-radius: 10px;
+  padding: 10px;
+  color: #FFF;
+  border: 2px solid #666;
+  cursor: pointer;
+  width: 250px;
+  text-align: center;
+}
+.bonus-container.large{
+  width: 400px;
+}
 .user-avatar{
   position: absolute;
   right: 70px;
