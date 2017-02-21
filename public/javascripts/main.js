@@ -59,6 +59,7 @@ angular.module('table99', [
             options: function() {
                 return {
                     templateUrl:"../templates/rulesDialog.html",
+                    controller: 'rulesDialogCtrl',
                 };
             }
         });
@@ -138,7 +139,7 @@ angular.module('table99', [
     }(document));
 
 })
-angular.module('table99.config', []).constant('BASE_URL','http://localhost:3000/');
+angular.module('table99.config', []).constant('BASE_URL','http://ec2-54-255-190-240.ap-southeast-1.compute.amazonaws.com:3000/');
 angular.module('table99.controllers', []);
 angular.module('table99.directives', []);
 angular.module('table99.services', []);
@@ -672,14 +673,13 @@ angular.module('table99.services').factory('soundService', [
     function() {
         return {
             buttonClick: function(){
-                document.getElementById("buttonClickAudio").play();
+                document.getElementById("buttonAudio").play();
             },
             exitClick: function(){
-                document.getElementById("buttonClickAudio").play();
+                document.getElementById("exitAudio").play();
             },
             arrowClick: function(){
-                audio.src = '../sounds/swipe.mp3';
-                audio.play();
+                document.getElementById("swipeAudio").play();
             },
             winner: function(){
                 document.getElementById("applausedAudio").play();
@@ -982,6 +982,7 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
             $scope.isCustomCharacter = !($scope.user.avatar.indexOf('characters.jpg') > -1);
         });
         $scope.openUpdateAvatarDialog = function($event){
+            soundService.alert();
             $mdDialog.show(
                 $mdDialog.updateAvatar({
                     parent: angular.element(document.body),
@@ -993,6 +994,7 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
             );
         };
         $scope.openChangeNameDialog = function($event){
+            soundService.alert();
             $mdDialog.show(
                 $mdDialog.updateDisplayName({
                     scope: $scope,
@@ -1004,6 +1006,7 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
             );
         };
         $scope.openChangeBackgroundDialog = function($event){
+            soundService.alert();
             $mdDialog.show(
                 $mdDialog.updateBackground({
                     scope: $scope,
@@ -1014,6 +1017,7 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
             );
         };
         $scope.openShopDialog = function($event){
+            soundService.alert();
             $mdDialog.show(
                 $mdDialog.shop({
                     scope: $scope,
@@ -1033,6 +1037,7 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
             method: {},
             event: {
                 beforeChange: function (event, slick, currentSlide, nextSlide) {
+                    soundService.arrowClick();
                 },
                 afterChange: function (event, slick, currentSlide, nextSlide) {
                 }
@@ -1046,6 +1051,7 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
             }
         };
         $scope.playTable = function(table){
+            soundService.buttonClick();
             if(table.type == "SYSTEM"){
                 $scope.playSystemTable(table);
             }
@@ -1059,7 +1065,6 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
             }
         };
         $scope.playSystemTable = function(table){
-            soundService.buttonClick();
             tableService.getAvailableSystemTables({
                 potAmount: table.boot_amount,
                 maxPlayers: table.max_players,
@@ -1336,12 +1341,15 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
             }
         };
         $scope.toggleMenu = function(){
+            soundService.alert();
             $scope.isMenuOpen = !$scope.isMenuOpen;
         };
         $scope.closeMenu = function(){
+            soundService.buttonClick();
             $scope.isMenuOpen = false;
         };
         $scope.closeChat = function(){
+            soundService.buttonClick();
             $scope.isChatWindowOpen = !$scope.isChatWindowOpen;
         };
         $scope.sendGift = function(args){
@@ -1357,6 +1365,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
             $scope.isCustomCharacter = !($scope.user.avatar.indexOf('characters.jpg') > -1);
         });
         $scope.openUpdateAvatarDialog = function($event){
+            soundService.alert();
             $mdDialog.show(
                 $mdDialog.updateAvatar({
                     scope: $scope,
@@ -1368,6 +1377,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
             );
         };
         $scope.openChangeNameDialog = function($event){
+            soundService.alert();
             $mdDialog.show(
                 $mdDialog.updateDisplayName({
                     parent: angular.element(document.body),
@@ -1382,6 +1392,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
             socket.emit('updatePlayerOnServer', {tableId: tableId, playerId: playerId, field: field, value: value});
         };
         $scope.openChangeBackgroundDialog = function($event){
+            soundService.alert();
             $mdDialog.show(
                 $mdDialog.updateBackground({
                     parent: angular.element(document.body),
@@ -1392,6 +1403,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
             );
         };
         $scope.openShopDialog = function($event){
+            soundService.alert();
             $mdDialog.show(
                 $mdDialog.shop({
                     scope: $scope,
@@ -1407,6 +1419,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
             $scope.openShopDialog();
         };
         $scope.switchTable = function(){
+            soundService.buttonClick();
             if(confirm('Are you sure wants to switch the game')){
                 socket.emit('removePlayer',  $scope.currentPlayer);
                 tableService.getAvailableSystemTables({
@@ -1427,6 +1440,8 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
             }
         }
         $scope.openRulesDialog = function(args){
+            $scope.isMenuOpen = false;
+            soundService.alert();
             $mdDialog.show(
                 $mdDialog.rules({
                     parent: angular.element(document.body),
@@ -1998,8 +2013,8 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
             element.style.height =  (scrollHeight - 10)+ "px";
         };
         $scope.exitGame = function(){
+            soundService.exitClick();
             if(confirm('Are you sure want to left the game')){
-                soundService.exitClick();
                 socket.emit('removePlayer',  $scope.currentPlayer);
                 $state.go('tables', {});
             }
@@ -2053,17 +2068,21 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
             });
         }
         $scope.toggleTableInfo = function(){
+            soundService.alert();
             if($scope.table && $scope.table.gameStarted){
                 $scope.tableInfoOpen = !$scope.tableInfoOpen;
             }
         };
         $scope.toggleMenu = function(){
+            soundService.alert();
             $scope.isMenuOpen = !$scope.isMenuOpen;
         };
         $scope.closeMenu = function(){
+            soundService.buttonClick();
             $scope.isMenuOpen = false;
         };
         $scope.closeChat = function(){
+            soundService.buttonClick();
             $scope.isChatWindowOpen = !$scope.isChatWindowOpen;
         };
         $scope.sendGift = function(args){
@@ -2079,6 +2098,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
             $scope.isCustomCharacter = !($scope.user.avatar.indexOf('characters.jpg') > -1);
         });
         $scope.openUpdateAvatarDialog = function($event){
+            soundService.alert();
             $mdDialog.show(
                 $mdDialog.updateAvatar({
                     scope: $scope,
@@ -2090,6 +2110,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
             );
         };
         $scope.openChangeNameDialog = function($event){
+            soundService.alert();
             $mdDialog.show(
                 $mdDialog.updateDisplayName({
                     scope: $scope,
@@ -2101,6 +2122,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
             );
         };
         $scope.openChangeBackgroundDialog = function($event){
+            soundService.alert();
             $mdDialog.show(
                 $mdDialog.updateBackground({
                     scope: $scope,
@@ -2111,6 +2133,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
             );
         };
         $scope.openShopDialog = function($event){
+            soundService.alert();
             $mdDialog.show(
                 $mdDialog.shop({
                     scope: $scope,
@@ -2122,6 +2145,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
             );
         };
         $scope.openFBFriendsDialog = function($event){
+            soundService.alert();
             FB.ui({
                 method: 'send',
                 link:  BASE_URL+"#/userPlay/"+$scope.table.id+"/true",
@@ -2136,6 +2160,8 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
             socket.emit('updatePlayerOnServer', {tableId: tableId, playerId: playerId, field: field, value: value});
         };
         $scope.openRulesDialog = function(args){
+            soundService.alert();
+            $scope.isMenuOpen = false;
             $mdDialog.show(
                 $mdDialog.rules({
                     parent: angular.element(document.body),
@@ -2644,6 +2670,10 @@ angular.module('table99.controllers').controller('nameDialogCtrl', ['$rootScope'
                 $state.go('signin', {});
             }
         };
+        $scope.closeDialog = function(){
+            soundService.buttonClick();
+            $mdDialog.hide();
+        };
     }]);
 angular.module('table99.controllers').controller('avatarDialogCtrl', ['$rootScope', '$scope', '$state', '$localStorage',
     'soundService', 'userService', '$mdDialog', 'Upload', 'BASE_URL', 'caller',
@@ -2651,11 +2681,16 @@ angular.module('table99.controllers').controller('avatarDialogCtrl', ['$rootScop
         $scope.up = {};
         $scope.uploadingStart = false;
 
+        $scope.closeDialog = function(){
+            soundService.buttonClick();
+            $mdDialog.hide();
+        };
         $scope.addUserAvatar = function(){
             soundService.buttonClick();
             $scope.addAvatar = false;
         };
         $scope.uploadAvatar = function(){
+            soundService.buttonClick();
             if ($scope.up.file) {
                 Upload.upload({
                     url: '/user/uploadAvatar',
@@ -2743,9 +2778,20 @@ angular.module('table99.controllers').controller('backgroundDialogCtrl', ['$root
             slidesToScroll: 1,
             enabled: true,
             dots: false,
+            event: {
+                beforeChange: function (event, slick, currentSlide, nextSlide) {
+                    soundService.arrowClick();
+                },
+                afterChange: function (event, slick, currentSlide, nextSlide) {
+                }
+            }
         };
-
+        $scope.closeDialog = function(){
+            soundService.buttonClick();
+            $mdDialog.hide();
+        };
         $scope.changeBackground = function(object){
+            soundService.buttonClick();
             var styleObj = { 'background': object.target.attributes.image.value };
             $localStorage.BACKGROUND = $rootScope.background = $scope.background = styleObj;
             $mdDialog.cancel();
@@ -2774,10 +2820,15 @@ angular.module('table99.controllers').controller('shopDialogCtrl', ['$rootScope'
             method: {},
             event: {
                 beforeChange: function (event, slick, currentSlide, nextSlide) {
+                    soundService.arrowClick();
                 },
                 afterChange: function (event, slick, currentSlide, nextSlide) {
                 }
             }
+        };
+        $scope.closeDialog = function(){
+            soundService.buttonClick();
+            $mdDialog.hide();
         };
         $scope.boughtShopItem = function(item){
             soundService.buttonClick();
@@ -2824,7 +2875,12 @@ angular.module('table99.controllers').controller('shareCtrl', ['$rootScope', '$s
 
         loadGifts();
 
+        $scope.closeDialog = function(){
+            soundService.buttonClick();
+            $mdDialog.hide();
+        };
         $scope.send = function(gift){
+            soundService.buttonClick();
             $mdDialog.hide();
             USER.chips -= gift.price;
             userService.updateBalance({id: USER.id, chips: USER.chips}).success(function(res) {
@@ -2862,3 +2918,11 @@ angular.module('table99.controllers').controller('shareCtrl', ['$rootScope', '$s
             });
         }
     }]);
+angular.module('table99.controllers').controller('rulesDialogCtrl', ['$rootScope', '$scope', '$state', '$localStorage','soundService', '$mdDialog',
+    function($rootScope, $scope, $state, $localStorage, soundService, $mdDialog) {
+
+        $scope.closeDialog = function(){
+            soundService.buttonClick();
+            $mdDialog.hide();
+        };
+}]);
