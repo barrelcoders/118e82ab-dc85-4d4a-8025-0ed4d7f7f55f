@@ -156,6 +156,11 @@ router.post('/createCustomTable', function(req, res) {
                 message: 'PROBLEM_TABLE_CREATION'
             });
         })
+    } else {
+        res.json({
+            status: 'failed',
+            message: 'VALIDATION_FAILED'
+        });
     }
 });
 router.post('/getCustomTables', function(req, res) {

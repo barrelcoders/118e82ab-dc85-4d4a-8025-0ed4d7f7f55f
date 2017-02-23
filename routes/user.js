@@ -252,7 +252,7 @@ router.post('/getBonus', function(req, res) {
                         });
                     } else {
                         bonus = yesterdayResults[0];
-                        bonus.received = dateTime.create(bonus.received).format('Y-m-d H:M:s');
+                        bonus.received = dateTime.create(bonus.received).format('Y-m-d H:M:S');
                         res.json({
                             'status': 'failed',
                             data: bonus,

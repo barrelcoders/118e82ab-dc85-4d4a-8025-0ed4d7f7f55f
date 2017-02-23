@@ -1050,9 +1050,20 @@ audio{
   cursor: pointer;
   width: 250px;
   text-align: center;
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  height: 60px;
 }
 .bonus-container.large{
   width: 400px;
+}
+.bonus-container span{
+  line-height: 35px;
+  display: block;
+  height: 35px;
+  margin-top: -10px;
+  min-width: 250px;
 }
 .user-avatar{
   position: absolute;
@@ -1447,6 +1458,9 @@ audio{
   margin-top: 0;
   height: 65px;
 }
+.top-button-bar .background.image{
+  background: url(../images/violent-bg.jpg);
+}
 .top-button-bar .score{
   background: #400201;
   height: 30px;
@@ -1569,7 +1583,7 @@ audio{
 }
 .window.large{
   width: 600px;
-  height: 600px;
+  height: 300px;
   padding: 60px;
 }
 .window.signin, .window.signup, .window.settings, .window.shop, .window.createTable {

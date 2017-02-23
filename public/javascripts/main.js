@@ -11,7 +11,8 @@ angular.module('table99', [
     'slickCarousel',
     'ngFileUpload',
     'ngMaterial',
-    'angular-loading-bar'
+    'angular-loading-bar',
+    'angularMoment'
 ])
 .config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$facebookProvider', '$mdDialogProvider',
     function($stateProvider, $urlRouterProvider, $locationProvider, $facebookProvider, $mdDialogProvider) {
@@ -318,7 +319,7 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                         className = (player.playerInfo.avatar.indexOf('character') > -1) ? player.playerInfo.avatar : 'custom-character';
                     }
                     else{
-                        null;
+                        className = null;
                     }
                     return className;
                 };
@@ -509,7 +510,7 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                         className = (player.playerInfo.avatar.indexOf('character') > -1) ? player.playerInfo.avatar : 'custom-character';
                     }
                     else{
-                        null;
+                        className = null;
                     }
                     return className;
                 };
@@ -1129,35 +1130,36 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
                         chips: $scope.user.chips + $scope.bonusObj.amount
                     }).success(function(res) {
                         if (res.status == 'success') {
+                            alert('Bonus successfully credited in your account');
                             if($localStorage.USER){
                                 var localStorageData = $localStorage.USER;
                                 localStorageData.chips = res.data.chips;
                                 $localStorage.USER = localStorageData;
                             }
                             $scope.user.chips = res.data.chips;
-                            var currentDate = new Date($scope.bonusObj.received).getTime();
-                            var nextDate = new Date($scope.bonusObj.received);
-                            nextDate.setDate(nextDate.getDate() + 1);
-                            nextDate = nextDate.getTime();
-                            var seconds = (nextDate - currentDate)/1000;
+                            var nextDate = moment($scope.bonusObj.received).add('days', 1).unix(),
+                                currentDate = moment().unix(),
+                                diffTime = nextDate - currentDate,
+                                duration = moment.duration(diffTime * 1000, 'milliseconds');
+
                             var interval = $interval(function() {
-                                var days = Math.floor(seconds/24/60/60),
-                                    hoursLeft = Math.floor((seconds) - (days*86400)),
-                                    hours = Math.floor(hoursLeft/3600),
-                                    minutesLeft = Math.floor((hoursLeft) - (hours*3600)),
-                                    minutes = Math.floor(minutesLeft/60),
-                                    remainingSeconds = seconds % 60;
+                                duration = moment.duration(duration.asMilliseconds() - 1000, 'milliseconds');
+                                var d = moment.duration(duration).days(),
+                                    h = moment.duration(duration).hours(),
+                                    m = moment.duration(duration).minutes(),
+                                    s = moment.duration(duration).seconds();
 
-                                if (remainingSeconds < 10)
-                                    remainingSeconds = "0" + remainingSeconds;
+                                d = $.trim(d).length === 1 ? '0' + d : d;
+                                h = $.trim(h).length === 1 ? '0' + h : h;
+                                m = $.trim(m).length === 1 ? '0' + m : m;
+                                s = $.trim(s).length === 1 ? '0' + s : s;
 
-                                $scope.nextBonusDateString = parseInt(hours)+"h "+parseInt(minutes)+"m "+parseInt(remainingSeconds)+"s";
+                                $scope.nextBonusDateString = parseInt(h)+"h "+parseInt(m)+"m "+parseInt(s)+"s";
 
-                                if(seconds == 0){
+                                if(duration.asSeconds() == 0){
                                     $interval.cancel(interval);
                                     $scope.bonusCredited = false;
                                 }
-                                else seconds--;
                             }, 1000);
                             $scope.bonusCredited = true;
                         }
@@ -1238,29 +1240,29 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
                     }
                     if(res.message == 'ALREADY_CREDITED'){
                         $scope.bonusObj = res.data;
-                        var currentDate = new Date($scope.bonusObj.received).getTime();
-                        var nextDate = new Date();
-                        nextDate.setDate(nextDate.getDate() + 1);
-                        nextDate = nextDate.getTime();
-                        var seconds = (nextDate - currentDate)/1000;
+                        var nextDate = moment($scope.bonusObj.received).add('days', 1).unix(),
+                            currentDate = moment().unix(),
+                            diffTime = nextDate - currentDate,
+                            duration = moment.duration(diffTime * 1000, 'milliseconds');
+
                         var interval = $interval(function() {
-                            var days = Math.floor(seconds/24/60/60),
-                                hoursLeft = Math.floor((seconds) - (days*86400)),
-                                hours = Math.floor(hoursLeft/3600),
-                                minutesLeft = Math.floor((hoursLeft) - (hours*3600)),
-                                minutes = Math.floor(minutesLeft/60),
-                                remainingSeconds = seconds % 60;
+                            duration = moment.duration(duration.asMilliseconds() - 1000, 'milliseconds');
+                            var d = moment.duration(duration).days(),
+                                h = moment.duration(duration).hours(),
+                                m = moment.duration(duration).minutes(),
+                                s = moment.duration(duration).seconds();
 
-                            if (remainingSeconds < 10)
-                                remainingSeconds = "0" + remainingSeconds;
+                            d = $.trim(d).length === 1 ? '0' + d : d;
+                            h = $.trim(h).length === 1 ? '0' + h : h;
+                            m = $.trim(m).length === 1 ? '0' + m : m;
+                            s = $.trim(s).length === 1 ? '0' + s : s;
 
-                            $scope.nextBonusDateString = parseInt(hours)+"h "+parseInt(minutes)+"m "+parseInt(remainingSeconds)+"s";
+                            $scope.nextBonusDateString = parseInt(h)+"h "+parseInt(m)+"m "+parseInt(s)+"s";
 
-                            if(seconds == 0){
+                            if(duration.asSeconds() == 0){
                                 $interval.cancel(interval);
                                 $scope.bonusCredited = false;
                             }
-                            else seconds--;
                         }, 1000);
                         $scope.bonusCredited = true;
                     }

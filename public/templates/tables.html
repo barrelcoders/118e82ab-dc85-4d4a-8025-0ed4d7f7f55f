@@ -1,13 +1,14 @@
 <style type="text/css">
 	.custom-character{
-		background: url({{user.avatar}}) no-repeat;
+		{{user.avatar}}
 		background-size: contain !important;
+		background-repeat: no-repeat;
 	}
 </style>
 <div ng-controller='tablesCtrl'>
 	<header class="top-button-bar">
 		<div class="user image" ng-class="characterClass" ng-click="openUpdateAvatarDialog()"></div>
-		<div class="image" ng-style="background" ng-click="openChangeBackgroundDialog()"></div>
+		<div class="background image" ng-style="background" ng-click="openChangeBackgroundDialog()"></div>
 		<div class="score"><i class="fa fa-rupee"></i> {{user.chips}}</div>
 		<div class="score" ng-click="openChangeNameDialog()">{{user.displayName}}</div>
 		<div class="right">
@@ -34,10 +35,10 @@
 		</div>
 	</form>
 </div>
-<div class="bonus-container" ng-hide="bonusObj | isEmpty" ng-class="{'large': bonusCredited}">
-	<span class="amount" ng-show="!bonusCredited" ng-click="creditBonus()"><i class="fa fa-rupee"></i> {{bonusObj.bonus}}</span>
-	<span class="time" ng-show="bonusCredited" ><i class="fa fa-clock-o"></i> {{nextBonusDateString}}</span>
-</div>
+<button type="button" class="bonus-container" ng-class="{'large': bonusCredited}" ng-click="creditBonus()">
+	<span class="amount" ng-if="!bonusCredited" ><i class="fa fa-rupee"></i> {{bonusObj.bonus}}</span>
+	<span class="time" ng-if="bonusCredited" ><i class="fa fa-clock-o"></i> {{nextBonusDateString}}</span>
+</button>
 <div class="left-cards"></div>
 <div class="bottom-cards"></div>
 <div class="top-coin"></div>

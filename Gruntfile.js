@@ -21,6 +21,7 @@ module.exports = function(grunt) {
 			"public/javascripts/vendor/angular-ui-router.js",
 			"public/javascripts/vendor/slick.js",
 			"public/javascripts/vendor/loading-bar.min.js",
+            "public/javascripts/vendor/moment.min.js",
 			"public/javascripts/vendor/ngStorage.min.js",
 			"public/javascripts/vendor/ngFacebook.js",
 			"public/javascripts/vendor/angular-slick.js",
@@ -28,7 +29,8 @@ module.exports = function(grunt) {
 			"public/javascripts/vendor/angular-animate.min.js",
 			"public/javascripts/vendor/angular-aria.min.js",
 			"public/javascripts/vendor/angular-messages.min.js",
-			"public/javascripts/vendor/angular-material.min.js"
+			"public/javascripts/vendor/angular-material.min.js",
+            "public/javascripts/vendor/angular-moment.min.js"
 		],
         dest: 'public/javascripts/vendor/vendor.min.js'
       }
