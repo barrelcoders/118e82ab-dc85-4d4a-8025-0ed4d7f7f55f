@@ -198,8 +198,8 @@ angular.module('table99.directives').directive('playingCard', [
 
     }
 ]);
-angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundService', '$mdDialog', '$timeout',
-    function($filter, soundService, $mdDialog, $timeout) {
+angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundService', '$mdDialog', '$timeout', '$interval',
+    function($filter, soundService, $mdDialog, $timeout, $interval) {
         return {
             scope: {
                 table: '=',
@@ -250,6 +250,32 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                         });
                     });
                 }
+                function doCardDistributionAnimation(args) {
+                    var counter = 2;
+                    var interval = $interval(function() {
+                        var animateDiv = $("<div class='deck-card spin counter-"+counter+"' style='width: 50px;height: 70px;'></div>").appendTo("body")
+                        var animateTo = $(element).find(".side-player-outer").offset();
+                        var animateFrom = $(".table-bet").offset();
+                        animateFrom.top += 10;
+                        animateFrom.left += 10;
+                        animateTo.left += 120;
+                        animateTo.top += 100;
+                        animateDiv.css(animateFrom);
+                        animateDiv.fadeIn(function() {
+                            soundService.card();
+                            animateDiv.animate(animateTo, args.timeout || 500, function() {
+                                $('.deck-card').removeClass('spin');
+                                $('.deck-card.counter-2').addClass('rotate-right');
+                                $('.deck-card.counter-0').addClass('rotate-left');
+                            });
+                        });
+
+                        if(counter == 0){
+                            $interval.cancel(interval);
+                        }
+                        counter--;
+                    }, 1000);
+                }
 
                 var performBetAnimation = scope.$on('performBetAnimation', function(evt, args) {
                     if (scope.player && scope.player.turn) {
@@ -273,6 +299,16 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                     if (scope.player && scope.player.active) {
                         doAnimation({
                             amount: args.boot,
+                            timeout: args.timeout
+                        });
+                        $timeout(function(){
+                            $('.deck-card').remove();
+                        }, args.timeout);
+                    }
+                });
+                var performCardDistributionAnimation = scope.$on('performCardDistributionAnimation', function(evt, args) {
+                    if (scope.player && scope.player.active) {
+                        doCardDistributionAnimation({
                             timeout: args.timeout
                         });
                     }
@@ -328,14 +364,15 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                     performWinnerAnimation();
                     performBootAnimation();
                     performGiftAnimation();
+                    performCardDistributionAnimation();
                     updatePlayerSuccess();
                 });
             }
         };
     }
 ]);
-angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundService', '$timeout',
-    function($filter, soundService, $timeout) {
+angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundService', '$timeout', '$interval',
+    function($filter, soundService, $timeout, $interval) {
         var BLIND_ALLOWED = 4;
         return {
             scope: {
@@ -392,6 +429,32 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                         });
                     });
                 }
+                function doCardDistributionAnimation(args) {
+                    var counter = 2;
+                    var interval = $interval(function() {
+                        var animateDiv = $("<div class='deck-card spin counter-"+counter+"' style='width: 70px;height: 100px;'></div>").appendTo("body")
+                        var animateTo = $(element).find(".current-player-outer").offset();
+                        var animateFrom = $(".table-bet").offset();
+                        animateFrom.top += 20;
+                        animateFrom.left += 10;
+                        animateTo.left += 120;
+                        animateTo.top += 150;
+                        animateDiv.css(animateFrom);
+                        animateDiv.fadeIn(function() {
+                            soundService.card();
+                            animateDiv.animate(animateTo, args.timeout || 500, function() {
+                                $('.deck-card.counter-2').addClass('rotate-right');
+                                $('.deck-card.counter-0').addClass('rotate-left');
+                            });
+                        });
+
+                        if(counter == 0){
+                            $interval.cancel(interval);
+                            //$('.deck-card').remove();
+                        }
+                        counter--;
+                    }, 1000);
+                }
 
                 var performBetAnimation = scope.$on('performBetAnimation', function(evt, args) {
                     if (scope.player && scope.player.turn) {
@@ -417,8 +480,17 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                             amount: args.boot,
                             timeout: args.timeout
                         });
+                        $timeout(function(){
+                            $('.deck-card').remove();
+                        }, args.timeout);
                     }
-
+                });
+                var performCardDistributionAnimation = scope.$on('performCardDistributionAnimation', function(evt, args) {
+                    if (scope.player && scope.player.active) {
+                        doCardDistributionAnimation({
+                            timeout: args.timeout
+                        });
+                    }
                 });
                 var performGiftAnimation = scope.$on('performGiftAnimation', function(evt, args) {
                     var from = $("input[value="+args.from+"]").offset(),
@@ -543,6 +615,7 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                     performBetAnimation();
                     performWinnerAnimation();
                     performBootAnimation();
+                    performCardDistributionAnimation();
                     performGiftAnimation();
                     updatePlayerSuccess();
                 });
@@ -711,6 +784,9 @@ angular.module('table99.services').factory('soundService', [
             },
             alert: function(){
                 document.getElementById("alertAudio").play();
+            },
+            card: function(){
+                document.getElementById("cardAudio").play();
             },
         };
     }
@@ -1922,6 +1998,14 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                 }
                 $scope.$digest();
             });
+            socket.on('distributeCards', function(args){
+                if(scope.tableId != args.tableId)
+                    return;
+
+                $scope.$broadcast('performCardDistributionAnimation', {
+                    timeout: 500
+                });
+            });
             socket.on('startNew', function(args) {
                 if(args.tableId != tableId)
                     return;
@@ -2628,6 +2712,14 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                     }
                     $scope.$digest();
                 }, 1000);
+            });
+            socket.on('distributeCards', function(args){
+                if(scope.tableId != args.tableId)
+                    return;
+
+                $scope.$broadcast('performCardDistributionAnimation', {
+                    timeout: 500
+                });
             });
             socket.on('cardsSeen', function(args) {
                 if(args.tableId != tableId)
