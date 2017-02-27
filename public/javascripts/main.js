@@ -253,7 +253,7 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                 function doCardDistributionAnimation(args) {
                     var counter = 2;
                     var interval = $interval(function() {
-                        var animateDiv = $("<div class='deck-card spin counter-"+counter+"' style='width: 50px;height: 70px;'></div>").appendTo("body")
+                        var animateDiv = $("<div class='deck-card spin counter-"+counter+"' style='width: 50px;height: 70px;'></div>").appendTo("body > .container")
                         var animateTo = $(element).find(".side-player-outer").offset();
                         var animateFrom = $(".table-bet").offset();
                         animateFrom.top += 10;
@@ -279,6 +279,7 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
 
                 var performBetAnimation = scope.$on('performBetAnimation', function(evt, args) {
                     if (scope.player && scope.player.turn) {
+                        soundService.coin();
                         doAnimation({
                             amount: args.bet,
                             timeout: args.timeout
@@ -297,6 +298,7 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                 });
                 var performBootAnimation = scope.$on('performBootAnimation', function(evt, args) {
                     if (scope.player && scope.player.active) {
+                        soundService.coin();
                         doAnimation({
                             amount: args.boot,
                             timeout: args.timeout
@@ -329,7 +331,6 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                         scope.$apply();
                     }
                 });
-
 
                 scope.share = function(event){
                     if(scope.player && scope.player.active){
@@ -432,7 +433,7 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                 function doCardDistributionAnimation(args) {
                     var counter = 2;
                     var interval = $interval(function() {
-                        var animateDiv = $("<div class='deck-card spin counter-"+counter+"' style='width: 70px;height: 100px;'></div>").appendTo("body")
+                        var animateDiv = $("<div class='deck-card spin counter-"+counter+"' style='width: 70px;height: 100px;'></div>").appendTo("body > .container")
                         var animateTo = $(element).find(".current-player-outer").offset();
                         var animateFrom = $(".table-bet").offset();
                         animateFrom.top += 20;
@@ -450,7 +451,6 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
 
                         if(counter == 0){
                             $interval.cancel(interval);
-                            //$('.deck-card').remove();
                         }
                         counter--;
                     }, 1000);
@@ -458,6 +458,7 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
 
                 var performBetAnimation = scope.$on('performBetAnimation', function(evt, args) {
                     if (scope.player && scope.player.turn) {
+                        soundService.coin();
                         doAnimation({
                             amount: args.bet,
                             timeout: args.timeout
@@ -476,6 +477,7 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                 });
                 var performBootAnimation = scope.$on('performBootAnimation', function(evt, args) {
                     if (scope.player && scope.player.active) {
+                        soundService.coin();
                         doAnimation({
                             amount: args.boot,
                             timeout: args.timeout
@@ -788,6 +790,10 @@ angular.module('table99.services').factory('soundService', [
             card: function(){
                 document.getElementById("cardAudio").play();
             },
+            coin: function(){
+                document.getElementById("coinAudio").play();
+            },
+
         };
     }
 ]);
@@ -836,7 +842,10 @@ angular.module('table99.services').factory('userService', ['$http',
             },
             creditBonus: function(params) {
                 return $http.post('/user/creditBonus', params);
-            }
+            },
+            updateBonusTime: function(params){
+                return $http.post('/user/updateBonusTime', params);
+            },
         };
     }
 ]);
@@ -1052,8 +1061,8 @@ angular.module('table99.controllers').controller('signInCtrl', ['$rootScope', '$
     }
 ]);
 angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$localStorage', '$scope', 'tableService',
-    '$state', 'layoutService', 'soundService', '$mdDialog', 'userService','$interval',
-    function($rootScope, $localStorage, $scope, tableService, $state, layoutService, soundService, $mdDialog, userService, $interval) {
+    '$state', 'layoutService', 'soundService', '$mdDialog', 'userService','$interval','$window',
+    function($rootScope, $localStorage, $scope, tableService, $state, layoutService, soundService, $mdDialog, userService, $interval, $window) {
         $rootScope.layout = layoutService.layoutClass.gameLayout;
         $scope.bonusObj = {};
         $scope.bonusCredited = false;
@@ -1232,9 +1241,23 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
 
                                 $scope.nextBonusDateString = parseInt(h)+"h "+parseInt(m)+"m "+parseInt(s)+"s";
 
-                                if(duration.asSeconds() == 0){
+                                var remainingSeconds = duration.asSeconds();
+                                if(remainingSeconds == 0){
                                     $interval.cancel(interval);
                                     $scope.bonusCredited = false;
+                                }
+                                if(remainingSeconds < 0){
+                                    $interval.cancel(interval);
+                                    userService.updateBonusTime({
+                                        user: $scope.user.id
+                                    }).success(function(res) {
+                                        if (res.status == 'success') {
+                                            $window.location.reload();
+                                        }
+                                        if (res.status == 'failed') {
+                                            if(res.message == "PROBLEM_UPDATING_BONUS_TIME"){}
+                                        }
+                                    });
                                 }
                             }, 1000);
                             $scope.bonusCredited = true;
@@ -1335,9 +1358,24 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
 
                             $scope.nextBonusDateString = parseInt(h)+"h "+parseInt(m)+"m "+parseInt(s)+"s";
 
-                            if(duration.asSeconds() == 0){
+                            var remainingSeconds = duration.asSeconds();
+                            if(remainingSeconds == 0){
                                 $interval.cancel(interval);
                                 $scope.bonusCredited = false;
+                            }
+
+                            if(remainingSeconds < 0){
+                                $interval.cancel(interval);
+                                userService.updateBonusTime({
+                                    user: $scope.user.id
+                                }).success(function(res) {
+                                    if (res.status == 'success') {
+                                        $window.location.reload();
+                                    }
+                                    if (res.status == 'failed') {
+                                        if(res.message == "PROBLEM_UPDATING_BONUS_TIME"){}
+                                    }
+                                });
                             }
                         }, 1000);
                         $scope.bonusCredited = true;

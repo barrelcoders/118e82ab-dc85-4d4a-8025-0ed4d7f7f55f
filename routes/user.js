@@ -341,5 +341,29 @@ router.post('/creditBonus', function(req, res) {
         });
     }
 });
+router.post('/updateBonusTime', function(req, res) {
+    if (req.body.user) {
+        var received = dateTime.create().format('Y-m-d H:M:S');
+        DAL.db.bonus.updateTime(req.body.user, received, function(results){
+            res.json({
+                'status': 'success',
+                data: {
+                    received: received
+                }
+            });
+        },
+        function(err){
+            res.json({
+                status: 'failed',
+                message: 'PROBLEM_UPDATING_BONUS_TIME'
+            });
+        });
+    } else {
+        res.json({
+            status: 'failed',
+            message: 'PROBLEM_UPDATING_BONUS_TIME'
+        });
+    }
+});
 
 module.exports = router;
