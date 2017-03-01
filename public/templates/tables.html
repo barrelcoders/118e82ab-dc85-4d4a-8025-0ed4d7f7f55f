@@ -1,7 +1,7 @@
 <style type="text/css">
 	.custom-character{
-		{{user.avatar}}
-		background-size: contain !important;
+		{{(user.avatar.indexOf('character') == -1) ? user.avatar : ''}}
+		background-size: cover !important;
 		background-repeat: no-repeat;
 	}
 </style>

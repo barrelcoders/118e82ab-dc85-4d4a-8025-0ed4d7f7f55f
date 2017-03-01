@@ -109,7 +109,7 @@ angular.module('table99', [
                 controller: "userPlayCtrl"
             });
 
-        //217009365372523
+        // 217009365372523
 
         $facebookProvider.setAppId('819967424810603');
     }
@@ -352,12 +352,9 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                 };
                 scope.playerAvatarClass = function(player){
                     var className = '';
-                    if(player && player.active){
+                    if(player && player.playerInfo)
                         className = (player.playerInfo.avatar.indexOf('character') > -1) ? player.playerInfo.avatar : 'custom-character';
-                    }
-                    else{
-                        className = null;
-                    }
+
                     return className;
                 };
                 scope.$on('$destroy', function(){
@@ -580,12 +577,9 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                 }
                 scope.playerAvatarClass = function(player){
                     var className = '';
-                    if(player && player.active){
+                    if(player && player.playerInfo)
                         className = (player.playerInfo.avatar.indexOf('character') > -1) ? player.playerInfo.avatar : 'custom-character';
-                    }
-                    else{
-                        className = null;
-                    }
+
                     return className;
                 };
                 scope.$on('startNew', function(args) {
@@ -1252,7 +1246,7 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
                                         user: $scope.user.id
                                     }).success(function(res) {
                                         if (res.status == 'success') {
-                                            $window.location.reload();
+                                            $state.reload();
                                         }
                                         if (res.status == 'failed') {
                                             if(res.message == "PROBLEM_UPDATING_BONUS_TIME"){}
@@ -1370,7 +1364,7 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
                                     user: $scope.user.id
                                 }).success(function(res) {
                                     if (res.status == 'success') {
-                                        $window.location.reload();
+                                        $state.reload();
                                     }
                                     if (res.status == 'failed') {
                                         if(res.message == "PROBLEM_UPDATING_BONUS_TIME"){}

@@ -31,6 +31,9 @@ body {
   padding: 20px;
   font: 14px sans-serif, "Lucida Grande", Helvetica, Arial;
 }
+.row.side{
+  height: 185px;
+}
 .icon {
   background: url('/images/grid-icons.png');
   width: 24px;
@@ -514,8 +517,8 @@ audio{
 }
 .table.play .side-player.left{
   float: left;
-  margin-top: 70px;
-  margin-left: -50px;
+  margin-top: 0px;
+  margin-left: 20%;
 }
 .table.play .side-player.left .icon-deal {
   position: absolute;
@@ -524,8 +527,8 @@ audio{
 }
 .table.play .side-player.right{
   float: right;
-  margin-top: 70px;
-  margin-right: -50px;
+  margin-top: 0;
+  margin-right: 20%;
 }
 .table.play .side-player.right .icon-deal {
   position: absolute;
@@ -539,7 +542,6 @@ audio{
     border: 3px Solid #26669D;
     top: 18px;
     left: 12px;
-    background-position: -668px -140px;
     border-radius: 11px;
 }
 .table.play .side-player .player-info .pic.custom {
@@ -573,12 +575,6 @@ audio{
   width: 145px;
   color: #FFF;
   left: -10px;
-}
-.table.play .side-player.left .cards {
-  left: -85px;
-}
-.table.play .side-player.right .cards {
-  left: 91px;
 }
 .table.play .side-player .cards {
   width: 147px;
@@ -646,12 +642,13 @@ audio{
 }
 .table.play .current-player-outer {
   width: 145px;
-  height: 200px;
+  height: 180px;
   margin: auto;
   border: 3px solid #8E3302;
   border-radius: 5px;
   background: rgba(142, 51, 2, 0.2);
   box-shadow: 10px 9px 5px 0 #000;
+  margin-top: -30px;
 }
 .table.play .current-player-outer .icon-deal {
   top: -22px;
@@ -691,7 +688,7 @@ audio{
 }
 .table.play .current-player-outer .current-player .info {
   height: 20px;
-  margin-top: -20px;
+  margin-top: -35px;
   width: 125px;
 }
 .table.play .current-player-outer .current-player .info .last-action {
@@ -1336,10 +1333,6 @@ audio{
   overflow: hidden;
   min-height: 50px;
   padding: 5px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
 }
 .chat-window footer textarea.normal{
   height: 46px !important;
@@ -1706,6 +1699,7 @@ audio{
   padding: 0;
   top: 5px;
   background: url(../images/table.png) center 120px no-repeat;
+  background-size: 60% 70%;
 }
 .game-area.shifted{
   left: 300px;;
@@ -1837,7 +1831,6 @@ md-dialog.rules-dialog md-dialog-content{
     height: 280px;
     overflow: hidden;
   }
-
   .table.play .seat{
     height: 100px;
   }

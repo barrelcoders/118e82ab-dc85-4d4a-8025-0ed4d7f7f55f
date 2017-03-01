@@ -1,7 +1,7 @@
 <style type="text/css">
     .custom-character{
-        {{user.avatar}}
-        background-size: contain !important;
+        {{(user.avatar.indexOf('character') == -1) ? user.avatar : ''}}
+        background-size: cover !important;
         background-repeat: no-repeat;
     }
 </style>
@@ -51,7 +51,7 @@
                 </div>
                 <div class="col-xs-4 col-md-4"></div>
             </div>
-            <div class="row">
+            <div class="row side">
                 <div class="col-xs-4 col-md-4 seat3 seat">
                     <div side-player="" table="table" player="seat3" class="side-player right"> </div>
                 </div>
@@ -64,7 +64,7 @@
                     <div side-player="" table="table" player="seat4" class="side-player left"> </div>
                 </div>
             </div>
-            <div class="row">
+            <div class="row side">
                 <div class="col-xs-4 col-md-4 seat2 seat">
                     <div side-player="" table="table" player="seat2" class="side-player right"> </div>
                 </div>
@@ -137,6 +137,13 @@
             </div>
         </script>
         <script type="text/ng-template" id="side.player.html">
+            <style type="text/css">
+                .player-{{player.playerInfo.id}}{
+                    {{(player.playerInfo.avatar.indexOf('character') == -1) ? player.playerInfo.avatar : ''}}
+                    background-size: {{(player.playerInfo.avatar.indexOf('character') == -1) ? 'cover' : 'inherit'}} !important;
+                    background-repeat: no-repeat;
+                }
+            </style>
             <div ng-class="{winner:player.winner,turn:player.turn,packed:player.packed,active:player.active,inactive:!player.active,noplayer:!player}" class="side-player-outer" ng-click="share()">
                 <div class="side-player-container">
                     <input type="text" class="side-player-id" value="{{player.playerInfo.id}}" style="opacity:0;width:0;"/>
@@ -145,7 +152,7 @@
                     <div ng-show="!player" class="invite"> <span class="icon icon-md users"></span><span class="text">Invite Friend</span></div>
                     <div ng-show="player" class="player-info">
                         <div class="last-action">{{player.lastAction}}</div>
-                        <div class="pic" ng-class="playerAvatarClass(player)"></div>
+                        <div class="pic player-{{player.playerInfo.id}}" ng-class="playerAvatarClass(player)"></div>
                         <div slot="{{player.slot}}" class="name">{{ player.playerInfo.displayName}}</div>
                         <div class="last-bet"><i class="fa fa-rupee"></i> {{ player.lastBet || player.playerInfo.chips | number}}</div>
                     </div>
@@ -156,6 +163,13 @@
             </div>
         </script>
         <script type="text/ng-template" id="main.player.html">
+            <style type="text/css">
+                .player-{{player.playerInfo.id}}{
+                    {{(player.playerInfo.avatar.indexOf('character') == -1) ? player.playerInfo.avatar : ''}}
+                    background-size: {{(player.playerInfo.avatar.indexOf('character') == -1) ? 'cover' : 'inherit'}} !important;
+                    background-repeat: no-repeat;
+                }
+            </style>
             <div ng-class="{winner:player.winner,turn:player.turn,packed:player.packed,active:player.active,inactive:!player.active}" class="current-player-outer">
                 <div class="current-player">
                     <input type="text" class="current-player-id" value="{{player.playerInfo.id}}"style="opacity:0;width:0;"/>
@@ -165,7 +179,7 @@
                         <div class="text-info">
                             <span slot="{{player.slot}}" class="name">{{player.playerInfo.displayName}}</span>
                         </div>
-                        <div class="pic" ng-class="playerAvatarClass(player)"></div>
+                        <div class="pic player-{{player.playerInfo.id}}" ng-class="playerAvatarClass(player)"></div>
                         <div class="text-info">
                             <span class="chips"><i class="fa fa-rupee"></i> {{player.playerInfo.chips | number}}</span>
                             <div class="last-action">{{player.lastAction}}</div>
@@ -188,8 +202,8 @@
                     <button ng-disabled="disableActions" ng-show="player.isSideShowAvailable &amp;&amp; !table.isShowAvailable" ng-click="sideshow()" class="btn-main side-show">Side Show</button>
                 </div>
                 <div ng-show="player.sideShowTurn" class="side-show-actions form-group"><span class="side-show-message">{{player.sideShowMessage}}</span>
-                    <button ng-click="denySideShow()" class="btn btn-danger deny"> <span class="glyphicon glyphicon-remove"> </span></button>
-                    <button ng-click="acceptSideShow()" class="btn btn-success accept"> <span class="glyphicon glyphicon-ok"> </span></button>
+                    <button ng-click="denySideShow()" class="btn-sub deny"> <span class="fa fa-remove"> </span></button>
+                    <button ng-click="acceptSideShow()" class="btn-helper accept"> <span class="fa fa-check"> </span></button>
                 </div>
             </form>
         </script>
