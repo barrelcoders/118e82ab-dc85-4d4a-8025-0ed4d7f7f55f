@@ -20,7 +20,7 @@
         </div>
     </header>
     <div>
-        <div class="menu-window" ng-show="isMenuOpen">
+        <div class="menu-window" ng-class="{'ng-hide': !isMenuOpen, 'ng-show': isMenuOpen}">
             <ul>
                 <li><p class="menu-item" ng-click="closeMenu()">Close Menu</p></li>
                 <li><p class="menu-item" ng-click="exitGame()">Exit</p></li>
@@ -28,7 +28,7 @@
                 <li><p class="menu-item" ng-click="openRulesDialog()">How to Play</p></li>
             </ul>
         </div>
-        <div class="chat-window" ng-show="isChatWindowOpen">
+        <div class="chat-window" ng-class="{'ng-hide': !isChatWindowOpen, 'ng-show': isChatWindowOpen}">
             <header ng-click="closeChat()">CLOSE CHAT</header>
             <ul id="chat-list">
                 <li ng-repeat="chat in chats">
@@ -104,7 +104,7 @@
         <script type="text/ng-template" id="table.bet.html">
             <div class="bet-info">
                 <div class="bet alert">
-                    <span class="pot-amount"><i class="fa fa-rupee"></i> {{table.amount| number}} </span>
+                    <span class="pot-amount"><i class="fa fa-rupee"></i> {{ table.amount ? table.amount : 0 }} </span>
                 </div>
             </div>
         </script>

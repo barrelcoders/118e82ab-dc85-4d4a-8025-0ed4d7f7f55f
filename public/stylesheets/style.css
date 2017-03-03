@@ -44,20 +44,20 @@ body {
   background-position: -225px -298px;
 }
 /* Chrome, Safari, Opera */
-@-webkit-keyframes border-animate {
+@-webkit-keyframes background-animate {
   from {
-    border: solid 2px rgba(255, 0, 0, 0.5);
+    background: rgba(255, 0, 0, 0.3);
   }
   to {
-    border: solid 2px rgba(255, 237, 0, 0.9);
+    background: rgba(255, 237, 0, 0.7);
   }
 }
-@keyframes border-animate {
+@keyframes background-animate {
   from {
-    border: solid 2px rgba(255, 0, 0, 0.5);
+    background: rgba(255, 0, 0, 0.3);
   }
   to {
-    border: solid 2px rgba(255, 237, 0, 0.9);
+    background: rgba(255, 237, 0, 0.7);
   }
 }
 /* Chrome, Safari, Opera */
@@ -94,6 +94,9 @@ ul{
 }
 audio{
   display: none;
+}
+.ng-show{
+  display: block !important;
 }
 .animate-bet {
   display: none;
@@ -486,9 +489,9 @@ audio{
 }
 .table.play .side-player-outer.winner {
   border: solid 2px orange;
-  -webkit-animation: border-animate 3s infinite;
+  -webkit-animation: background-animate 3s infinite;
   /* Chrome, Safari, Opera */
-  animation: border-animate 3s infinite;
+  animation: background-animate 3s infinite;
 }
 .table.play .side-player-outer.winner .loser-text {
   display: block;
@@ -502,9 +505,9 @@ audio{
 }
 .table.play .side-player-outer.turn {
   border: solid 2px orange;
-  -webkit-animation: border-animate 3s infinite;
+  -webkit-animation: background-animate 3s infinite;
   /* Chrome, Safari, Opera */
-  animation: border-animate 3s infinite;
+  animation: background-animate 3s infinite;
 }
 .table.play .side-player-container {
   padding: 7px;
@@ -657,9 +660,9 @@ audio{
 }
 .table.play .current-player-outer.winner {
   border: solid 2px orange;
-  -webkit-animation: border-animate 3s infinite;
+  -webkit-animation: background-animate 3s infinite;
   /* Chrome, Safari, Opera */
-  animation: border-animate 3s infinite;
+  animation: background-animate 3s infinite;
 }
 .table.play .current-player-outer.winner .winner-text {
   display: block;
@@ -673,9 +676,9 @@ audio{
 }
 .table.play .current-player-outer.turn {
   border: solid 3px orange;
-  -webkit-animation: border-animate 3s infinite;
+  -webkit-animation: background-animate 3s infinite;
   /* Chrome, Safari, Opera */
-  animation: border-animate 3s infinite;
+  animation: background-animate 3s infinite;
 }
 .table.play .current-player-outer .current-player {
   position: relative;
@@ -1258,6 +1261,7 @@ audio{
   background: rgba(7, 163, 2, 0.6);
   z-index: 999;
   bottom: 0;
+  display: none;
 }
 .chat-window header{
   border: none;

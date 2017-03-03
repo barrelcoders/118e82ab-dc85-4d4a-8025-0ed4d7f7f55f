@@ -199,7 +199,8 @@ angular.module('table99.directives').directive('playingCard', [
     }
 ]);
 angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundService', '$mdDialog', '$timeout', '$interval',
-    function($filter, soundService, $mdDialog, $timeout, $interval) {
+    '$localStorage',
+    function($filter, soundService, $mdDialog, $timeout, $interval, $localStorage) {
         return {
             scope: {
                 table: '=',
@@ -251,6 +252,9 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                     });
                 }
                 function doCardDistributionAnimation(args) {
+                    if(!$localStorage.cardAnimationRunning)
+                        return;
+
                     var counter = 2;
                     var interval = $interval(function() {
                         var animateDiv = $("<div class='deck-card spin counter-"+counter+"' style='width: 50px;height: 70px;'></div>").appendTo("body > .container")
@@ -271,6 +275,7 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
                         });
 
                         if(counter == 0){
+                            $localStorage.cardAnimationRunning = false;
                             $interval.cancel(interval);
                         }
                         counter--;
@@ -369,8 +374,8 @@ angular.module('table99.directives').directive('sidePlayer', ['$filter', 'soundS
         };
     }
 ]);
-angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundService', '$timeout', '$interval',
-    function($filter, soundService, $timeout, $interval) {
+angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundService', '$timeout', '$interval', '$localStorage',
+    function($filter, soundService, $timeout, $interval, $localStorage) {
         var BLIND_ALLOWED = 4;
         return {
             scope: {
@@ -428,6 +433,9 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                     });
                 }
                 function doCardDistributionAnimation(args) {
+                    if(!$localStorage.cardAnimationRunning)
+                        return;
+
                     var counter = 2;
                     var interval = $interval(function() {
                         var animateDiv = $("<div class='deck-card spin counter-"+counter+"' style='width: 70px;height: 100px;'></div>").appendTo("body > .container")
@@ -447,6 +455,7 @@ angular.module('table99.directives').directive('mainPlayer', ['$filter', 'soundS
                         });
 
                         if(counter == 0){
+                            $localStorage.cardAnimationRunning = false;
                             $interval.cancel(interval);
                         }
                         counter--;
@@ -714,8 +723,8 @@ angular.module('table99.directives').directive('tableBet', [
 
     }
 ]);
-angular.module('table99.directives').directive('tableInfo', [
-    function() {
+angular.module('table99.directives').directive('tableInfo', [ 'soundService',
+    function(soundService) {
         return {
             scope: {
                 table: '=',
@@ -724,6 +733,7 @@ angular.module('table99.directives').directive('tableInfo', [
             link: function(scope, element, attrs) {
                 scope.close = function(){
                     scope.$parent.tableInfoOpen = false;
+                    soundService.buttonClick();
                 }
             }
         }
@@ -1065,7 +1075,7 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
         $scope.tables = [];
         $scope.customTables = [];
         $scope.isLoading = false;
-        $scope.nextBonusDateString = null;
+        $scope.nextBonusDateString = '0h 0m 0s';
 
         if($localStorage){
             if(!$localStorage.USER){
@@ -1524,6 +1534,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
         };
         $scope.exitGame = function(){
             if(confirm('Are you sure want to left the game')){
+                $('.deck-card').remove();
                 soundService.exitClick();
                 socket.emit('removePlayer',  $scope.currentPlayer);
                 $state.go('tables', {});
@@ -2034,6 +2045,11 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                 if(scope.tableId != args.tableId)
                     return;
 
+                if($localStorage.cardAnimationRunning)
+                    return;
+
+                $localStorage.cardAnimationRunning = true;
+
                 $scope.$broadcast('performCardDistributionAnimation', {
                     timeout: 500
                 });
@@ -2263,8 +2279,9 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
             element.style.height =  (scrollHeight - 10)+ "px";
         };
         $scope.exitGame = function(){
-            soundService.exitClick();
             if(confirm('Are you sure want to left the game')){
+                $('.deck-card').remove();
+                soundService.exitClick();
                 socket.emit('removePlayer',  $scope.currentPlayer);
                 $state.go('tables', {});
             }
@@ -2748,6 +2765,11 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
             socket.on('distributeCards', function(args){
                 if(scope.tableId != args.tableId)
                     return;
+
+                if($localStorage.cardAnimationRunning)
+                    return;
+
+                $localStorage.cardAnimationRunning = true;
 
                 $scope.$broadcast('performCardDistributionAnimation', {
                     timeout: 500
