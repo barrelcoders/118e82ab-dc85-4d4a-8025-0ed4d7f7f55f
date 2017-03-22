@@ -1536,7 +1536,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
             if(confirm('Are you sure want to left the game')){
                 $('.deck-card').remove();
                 soundService.exitClick();
-                socket.emit('removePlayer',  $scope.currentPlayer);
+                socket.emit('removePlayer', {tableId: tableId, player: $scope.currentPlayer});
                 $state.go('tables', {});
             }
         };
@@ -1674,7 +1674,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
         $scope.switchTable = function(){
             soundService.buttonClick();
             if(confirm('Are you sure wants to switch the game')){
-                socket.emit('removePlayer',  $scope.currentPlayer);
+                socket.emit('removePlayer', {tableId: tableId, player: $scope.currentPlayer});
                 tableService.getAvailableSystemTables({
                     potAmount: $scope.table.pot_amount,
                     maxPlayers: $scope.table.max_players,
@@ -2282,7 +2282,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
             if(confirm('Are you sure want to left the game')){
                 $('.deck-card').remove();
                 soundService.exitClick();
-                socket.emit('removePlayer',  $scope.currentPlayer);
+                socket.emit('removePlayer', {tableId: tableId, player: $scope.currentPlayer});
                 $state.go('tables', {});
             }
         };
