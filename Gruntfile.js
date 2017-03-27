@@ -30,7 +30,8 @@ module.exports = function(grunt) {
 			"public/javascripts/vendor/angular-aria.min.js",
 			"public/javascripts/vendor/angular-messages.min.js",
 			"public/javascripts/vendor/angular-material.min.js",
-            "public/javascripts/vendor/angular-moment.min.js"
+            "public/javascripts/vendor/angular-moment.min.js",
+            "public/javascripts/vendor/socket.min.js"
 		],
         dest: 'public/javascripts/vendor/vendor.min.js'
       }

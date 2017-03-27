@@ -12,7 +12,8 @@ angular.module('table99', [
     'ngFileUpload',
     'ngMaterial',
     'angular-loading-bar',
-    'angularMoment'
+    'angularMoment',
+    'angular.socket-io'
 ])
 .config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$facebookProvider', '$mdDialogProvider',
     function($stateProvider, $urlRouterProvider, $locationProvider, $facebookProvider, $mdDialogProvider) {
@@ -140,7 +141,7 @@ angular.module('table99', [
     }(document));
 
 })
-angular.module('table99.config', []).constant('BASE_URL','http://ec2-54-255-190-240.ap-southeast-1.compute.amazonaws.com:3000/');
+angular.module('table99.config', []).constant('BASE_URL','http://192.168.2.109:3000/');
 angular.module('table99.controllers', []);
 angular.module('table99.directives', []);
 angular.module('table99.services', []);
@@ -883,6 +884,11 @@ angular.module('table99.services').factory('tableService', ['$http',
         };
     }
 ]);
+angular.module('table99.services').factory('socket', function (socketFactory) {
+    return socketFactory({
+        ioSocket: io.connect(window.location.protocol + "//" + window.location.hostname + (window.location.port!=80?":"+window.location.port:"" ))
+    });
+});
 
 angular.module('table99.controllers').controller('table99Ctrl', ['$scope', 'cardService',
     function($scope, cardService) {
@@ -1454,9 +1460,9 @@ angular.module('table99.controllers').controller('createTableCtrl', ['$rootScope
     }
 ]);
 angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$localStorage', '$scope', 'tableService', '$state',
-    '$stateParams', '$filter', '$timeout', 'layoutService', 'soundService', '$mdDialog',
+    '$stateParams', '$filter', '$timeout', 'layoutService', 'soundService', '$mdDialog', 'socket',
     function($rootScope, $localStorage, $scope, tableService, $state, $stateParams,  $filter, $timeout,
-             layoutService, soundService, $mdDialog) {
+             layoutService, soundService, $mdDialog, socket) {
         var tableId = $stateParams.id, socket, tableLoadingInProgress = false;
         $rootScope.layout = layoutService.layoutClass.bodyLayout;
         $scope.background = '';
@@ -1481,7 +1487,6 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
             }
             else{
                 $scope.user = $localStorage.USER;
-                socket = io.connect(window.location.protocol + "//" + window.location.hostname + (window.location.port!=80?":"+window.location.port:"" ) );
                 fetchTable();
             }
         }
@@ -1493,6 +1498,22 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
             $rootScope.background = $scope.background = $localStorage.BACKGROUND;
         }
 
+        $scope.user.avatar = $scope.user.avatar ? $scope.user.avatar : 'background: url(images/default_avatar.jpg);';
+        $scope.user.displayName = $scope.user.displayName ? $scope.user.displayName : 'Guest';
+        $scope.user.chips = $scope.user.chips ? $scope.user.chips : '0';
+        $scope.characterClass = ($scope.user.avatar.indexOf('character') > -1) ? $scope.user.avatar : 'custom-character';
+
+        $scope.$on('$locationChangeStart', function(event, next, current) {
+            if(!$scope.table.gameStarted)
+                return;
+
+            if(confirm('Are you sure wants to left the table')){
+                $('.deck-card').remove();
+                soundService.exitClick();
+                socket.emit('removePlayer', {tableId: tableId, player: $scope.currentPlayer});
+                $state.go('tables', {});
+            }
+        });
         $scope.toggleChatWindow = function(){
             soundService.buttonClick();
             $scope.isChatWindowOpen = !$scope.isChatWindowOpen;
@@ -1533,7 +1554,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
             element.style.height =  (scrollHeight - 10)+ "px";
         };
         $scope.exitGame = function(){
-            if(confirm('Are you sure want to left the game')){
+            if(confirm('Are you sure wants to left the table')){
                 $('.deck-card').remove();
                 soundService.exitClick();
                 socket.emit('removePlayer', {tableId: tableId, player: $scope.currentPlayer});
@@ -1608,12 +1629,6 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
         $scope.sendGift = function(args){
             socket.emit('sendGift', args);
         };
-
-        $scope.user.avatar = $scope.user.avatar ? $scope.user.avatar : 'background: url(images/default_avatar.jpg);';
-        $scope.user.displayName = $scope.user.displayName ? $scope.user.displayName : 'Guest';
-        $scope.user.chips = $scope.user.chips ? $scope.user.chips : '0';
-        $scope.characterClass = ($scope.user.avatar.indexOf('character') > -1) ? $scope.user.avatar : 'custom-character';
-
         $scope.$watch('user.avatar', function() {
             $scope.characterClass = ($scope.user.avatar.indexOf('character') > -1) ? $scope.user.avatar : 'custom-character';
         });
@@ -1701,6 +1716,10 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                 })
             );
         };
+        $scope.$on('$destroy', function (event) {
+            socket.removeAllListeners();
+            delete window.onbeforeunload;
+        });
 
         function loadChats(){
             tableService.loadChats({
@@ -1813,7 +1832,6 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                 }
             });
             socket.on('sideShowResult', function(args) {
-
                 function sideShowResult() {
                     $scope.table = args.table;
                     for (var player in args.players) {
@@ -1861,8 +1879,6 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                 } else {
                     sideShowProcess();
                 }
-
-
             });
             socket.on('showWinner', function(args) {
                 if(args.tableId != tableId)
@@ -1963,6 +1979,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                 $scope.currentPlayer = args.player;
                 setOtherPlayers($scope.currentPlayer, args.player.otherPlayers);
                 $scope.$digest();
+                showNotification({message: "You have joined the table", timeout: 2000});
             });
             socket.on('playerLeft', function(args) {
                 if(args.tableId != tableId)
@@ -1981,6 +1998,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                     currentPl.playerInfo.chips = args.players[player].playerInfo.chips;
                 }
                 $scope.$digest();
+                showNotification({message: args.removedPlayer.playerInfo.displayName + " has left the table", timeout: 2000});
             });
             socket.on('gameCountDown', function(args) {
                 if(args.tableId != tableId)
@@ -2022,6 +2040,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                     $scope[$scope.seatingInfoById[args.players[player].id]].isSideShowAvailable = args.players[player].isSideShowAvailable;
                 }
                 $scope.$digest();
+                showNotification({message: args.player.playerInfo.displayName + " has seen the cards", timeout: 2000});
             });
             socket.on('notification', function(args) {
                 if(args.tableId != tableId)
@@ -2102,6 +2121,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                 $scope.seatingInfoById[args.player.id] = seat;
                 $scope[seat] = args.player;
                 $scope.$digest();
+                showNotification({message: args.player.playerInfo.displayName + " have joined the table", timeout: 2000});
             });
             socket.on('showChatMessage', function(chat) {
                 soundService.alert();
@@ -2128,8 +2148,6 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                 $scope.$broadcast('performGiftAnimation', args);
 
             });
-
-
         }
         function fetchTable(){
             if(!tableLoadingInProgress){
@@ -2153,15 +2171,13 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                     }
                 });
             }
-
-
         }
     }
 ]);
 angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', '$localStorage', '$scope', 'tableService', '$state',
-    '$stateParams', '$filter', '$timeout', 'layoutService', 'soundService', '$mdDialog', 'userService', 'BASE_URL',
+    '$stateParams', '$filter', '$timeout', 'layoutService', 'soundService', '$mdDialog', 'userService', 'BASE_URL', 'socket',
     function($rootScope, $localStorage, $scope, tableService, $state, $stateParams,  $filter, $timeout,
-             layoutService, soundService, $mdDialog, userService, BASE_URL) {
+             layoutService, soundService, $mdDialog, userService, BASE_URL, socket) {
         var tableId = $stateParams.id, referer=$stateParams.ref, socket, tableLoadingInProgress = false;
         $rootScope.layout = layoutService.layoutClass.bodyLayout;
         $scope.background = '';
@@ -2239,6 +2255,22 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
             $rootScope.background = $scope.background = $localStorage.BACKGROUND;
         }
 
+        $scope.user.avatar = $scope.user.avatar ? $scope.user.avatar : 'background: url(images/default_avatar.jpg);';
+        $scope.user.displayName = $scope.user.displayName ? $scope.user.displayName : 'Guest';
+        $scope.user.chips = $scope.user.chips ? $scope.user.chips : '0';
+        $scope.characterClass = ($scope.user.avatar.indexOf('character') > -1) ? $scope.user.avatar : 'custom-character';
+
+        $scope.$on('$locationChangeStart', function(event, next, current) {
+            if(!$scope.table.gameStarted)
+                return;
+
+            if(confirm('Are you sure wants to left the table')){
+                $('.deck-card').remove();
+                soundService.exitClick();
+                socket.emit('removePlayer', {tableId: tableId, player: $scope.currentPlayer});
+                $state.go('tables', {});
+            }
+        });
         $scope.toggleChatWindow = function(){
             soundService.buttonClick();
             $scope.isChatWindowOpen = !$scope.isChatWindowOpen;
@@ -2279,7 +2311,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
             element.style.height =  (scrollHeight - 10)+ "px";
         };
         $scope.exitGame = function(){
-            if(confirm('Are you sure want to left the game')){
+            if(confirm('Are you sure wants to left the table')){
                 $('.deck-card').remove();
                 soundService.exitClick();
                 socket.emit('removePlayer', {tableId: tableId, player: $scope.currentPlayer});
@@ -2355,12 +2387,6 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
         $scope.sendGift = function(args){
             socket.emit('sendGift', args);
         };
-
-        $scope.user.avatar = $scope.user.avatar ? $scope.user.avatar : 'background: url(images/default_avatar.jpg);';
-        $scope.user.displayName = $scope.user.displayName ? $scope.user.displayName : 'Guest';
-        $scope.user.chips = $scope.user.chips ? $scope.user.chips : '0';
-        $scope.characterClass = ($scope.user.avatar.indexOf('character') > -1) ? $scope.user.avatar : 'custom-character';
-
         $scope.$watch('user.avatar', function() {
             $scope.characterClass = ($scope.user.avatar.indexOf('character') > -1) ? $scope.user.avatar : 'custom-character';
         });
@@ -2435,6 +2461,10 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                 })
             );
         };
+        $scope.$on('$destroy', function (event) {
+            socket.removeAllListeners();
+            delete window.onbeforeunload;
+        });
 
         function facebookSignIn(name, email, picture){
             userService.fbsignin({
@@ -2721,6 +2751,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                 $scope.currentPlayer = args.player;
                 setOtherPlayers($scope.currentPlayer, args.player.otherPlayers);
                 $scope.$digest();
+                showNotification({message: "You have joined the table", timeout: 2000});
             });
             socket.on('playerLeft', function(args) {
                 if(args.tableId != tableId)
@@ -2739,6 +2770,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                     currentPl.playerInfo.chips = args.players[player].playerInfo.chips;
                 }
                 $scope.$digest();
+                showNotification({message: args.removedPlayer.playerInfo.displayName + " has left the table", timeout: 2000});
             });
             socket.on('gameCountDown', function(args) {
                 if(args.tableId != tableId)
@@ -2793,6 +2825,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                     $scope[$scope.seatingInfoById[args.players[player].id]].isSideShowAvailable = args.players[player].isSideShowAvailable;
                 }
                 $scope.$digest();
+                showNotification({message: args.players[player].playerInfo.displayName + " has seen the cards", timeout: 2000});
             });
             socket.on('notification', function(args) {
                 if(args.tableId != tableId)
@@ -2860,6 +2893,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                 $scope.seatingInfoById[args.player.id] = seat;
                 $scope[seat] = args.player;
                 $scope.$digest();
+                showNotification({message: args.player.playerInfo.displayName + " have joined the table", timeout: 2000});
             });
             socket.on('showChatMessage', function(chat) {
                 soundService.alert();
@@ -2910,7 +2944,6 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
         }
         function initialize(){
             $scope.user = $localStorage.USER;
-            socket = io.connect(window.location.protocol + "//" + window.location.hostname + (window.location.port!=80?":"+window.location.port:"" ) );
             fetchTable();
         }
     }
