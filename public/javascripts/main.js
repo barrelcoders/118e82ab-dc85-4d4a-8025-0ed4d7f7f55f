@@ -1487,6 +1487,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
             }
             else{
                 $scope.user = $localStorage.USER;
+                $localStorage.cardAnimationRunning = false;
                 fetchTable();
             }
         }
@@ -2061,7 +2062,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                 $scope.$digest();
             });
             socket.on('distributeCards', function(args){
-                if(scope.tableId != args.tableId)
+                if(scope.tableId != args.tableId && args.minPlayerAvailable)
                     return;
 
                 if($localStorage.cardAnimationRunning)
@@ -2201,6 +2202,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
         }
 
         if($localStorage){
+            $localStorage.cardAnimationRunning = false;
             if($localStorage.USER != undefined && ( referer == 'false' || referer == 'true')){
                 initialize();
             }
@@ -2795,7 +2797,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                 }, 1000);
             });
             socket.on('distributeCards', function(args){
-                if(scope.tableId != args.tableId)
+                if(scope.tableId != args.tableId && args.minPlayerAvailable)
                     return;
 
                 if($localStorage.cardAnimationRunning)
