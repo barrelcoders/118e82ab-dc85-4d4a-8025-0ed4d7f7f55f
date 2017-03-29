@@ -141,7 +141,7 @@ angular.module('table99', [
     }(document));
 
 })
-angular.module('table99.config', []).constant('BASE_URL','http://192.168.2.109:3000/');
+angular.module('table99.config', []).constant('BASE_URL','http://ec2-35-154-102-213.ap-south-1.compute.amazonaws.com:3000/');
 angular.module('table99.controllers', []);
 angular.module('table99.directives', []);
 angular.module('table99.services', []);
