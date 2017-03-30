@@ -3107,7 +3107,7 @@ angular.module('table99.controllers').controller('backgroundDialogCtrl', ['$root
         };
         $scope.changeBackground = function(object){
             soundService.buttonClick();
-            var styleObj = { 'background': object.target.attributes.image.value };
+            var styleObj = 'background-image: '+object.target.attributes.image.value +';';
             $localStorage.BACKGROUND = $rootScope.background = $scope.background = styleObj;
             $mdDialog.cancel();
         };
