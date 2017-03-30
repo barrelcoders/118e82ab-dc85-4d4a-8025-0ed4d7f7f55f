@@ -104,6 +104,7 @@ audio{
   width: 127px;
   z-index: 99;
   text-align: center;
+  border-radius: 50px;
 }
 .right-align {
   text-align: right;

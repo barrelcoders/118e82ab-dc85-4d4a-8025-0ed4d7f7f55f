@@ -110,7 +110,7 @@ angular.module('table99', [
                 controller: "userPlayCtrl"
             });
 
-        // 217009365372523
+        //217009365372523
 
         $facebookProvider.setAppId('819967424810603');
     }
@@ -1910,6 +1910,17 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                             $scope[playerSeat].cardSet.closed = args.players[player].cardSet.closed;
                         }
                     }
+                    $timeout(function(){
+                        for (var player in args.players) {
+                            var playerSeat = $scope.seatingInfoById[args.players[player].id];
+                            $scope[playerSeat].winner = false;
+                            $scope[playerSeat].turn = false;
+                            $scope[playerSeat].packed = false;
+                            $scope[playerSeat].cardSet = null;
+                            $scope[playerSeat].lastAction = "";
+                            $scope[playerSeat].lastBet = "";
+                        }
+                    },2000);
                     $scope.$digest();
                     $scope.$broadcast('performWinnerAnimation', {
                         bet: args.table.amount,
@@ -2683,6 +2694,17 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                             $scope[playerSeat].cardSet.closed = args.players[player].cardSet.closed;
                         }
                     }
+                    $timeout(function(){
+                        for (var player in args.players) {
+                            var playerSeat = $scope.seatingInfoById[args.players[player].id];
+                            $scope[playerSeat].winner = false;
+                            $scope[playerSeat].turn = false;
+                            $scope[playerSeat].packed = false;
+                            $scope[playerSeat].cardSet = null;
+                            $scope[playerSeat].lastAction = "";
+                            $scope[playerSeat].lastBet = "";
+                        }
+                    },2000);
                     $scope.$digest();
                     $scope.$broadcast('performWinnerAnimation', {
                         bet: args.table.amount,
