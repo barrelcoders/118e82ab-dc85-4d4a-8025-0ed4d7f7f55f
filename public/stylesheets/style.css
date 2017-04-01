@@ -1140,29 +1140,32 @@ audio{
   width: 450px;
 }
 .bonus-container {
-  background: rgba(0,0,0,0.5);
-  font-size: 50px;
-  border-radius: 10px;
-  padding: 10px;
-  color: #FFF;
-  border: 2px solid #666;
+  font-size: 40px;
   cursor: pointer;
   width: 250px;
   text-align: center;
   position: fixed;
   bottom: 10px;
-  left: 10px;
-  height: 60px;
+  left: -40px;
+  z-index: 10;
 }
-.bonus-container.large{
-  width: 400px;
+.bonus-container button{
+  background: rgba(0,0,0,.5);
+  color: #FFF;
+  border: 2px solid #666;
+  border-radius: 10px;
+  padding: 10px;
+  height: 50px;
+  line-height: 30px;
+  font-family: BauhausStdBold;
 }
 .bonus-container span{
   line-height: 35px;
   display: block;
-  height: 35px;
   margin-top: -10px;
   min-width: 250px;
+  color: #FFF;
+  font-weight: normal;
 }
 .user-avatar{
   position: absolute;
@@ -1863,6 +1866,24 @@ md-dialog.rules-dialog{
 md-dialog.rules-dialog md-dialog-content{
   top: 90px;
 }
+md-dialog.bonus-dialog{
+  height: 350px;
+}
+md-dialog.bonus-dialog md-dialog-content{
+  top: 80px;
+  padding: 0 60px;
+}
+md-dialog.bonus-dialog md-dialog-content form{
+  font-size: 20px;
+  background: url(../images/3-coins.png) 10px 20px no-repeat;
+  background-size: 100px 100px;
+  padding-left: 150px;
+}
+md-dialog.bonus-dialog md-dialog-content form .btn-main{
+  display: inline-block;
+  min-width: 100px;
+}
+
 /*and (-webkit-min-device-pixel-ratio: 3) or (-webkit-min-device-pixel-ratio: 2)*/
 
 @media only screen and (max-device-width: 736px) and (orientation: landscape)  {
