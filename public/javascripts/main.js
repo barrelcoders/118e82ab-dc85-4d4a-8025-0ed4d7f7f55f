@@ -1332,7 +1332,6 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
                                         scope: $scope,
                                         preserveScope: true,
                                         parent: angular.element(document.body),
-                                        targetEvent: $event,
                                         locals: {},
                                     })
                                 );
@@ -2955,9 +2954,9 @@ angular.module('table99.controllers').controller('bonusDialogCtrl', ['$rootScope
                         id: $scope.user.id,
                         chips: $scope.user.chips + $scope.bonusObj.amount
                     }).success(function(res) {
+                        angular.element('.md-dialog-container, .md-scroll-mask, md-backdrop').remove();
                         if (res.status == 'success') {
-                            alert('Bonus successfully credited in your account');
-                            $mdDialog.hide();
+                            $scope.bonusCredited = true;
                             if($localStorage.USER){
                                 var localStorageData = $localStorage.USER;
                                 localStorageData.chips = res.data.chips;
@@ -2989,7 +2988,6 @@ angular.module('table99.controllers').controller('bonusDialogCtrl', ['$rootScope
                                     $scope.bonusCredited = false;
                                 }
                             }, 1000);
-                            $scope.bonusCredited = true;
                         }
                         if (res.status == 'failed') {
                             if(res.message == "PROBLEM_UPDATING_BALANCE"){
