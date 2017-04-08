@@ -1,0 +1,28 @@
+<md-dialog aria-label="Play Invite Dialog" class="play-invite-dialog">
+    <md-dialog-content>
+        <div>
+            <h2 class="heading">TABLE INVITES:</h2>
+            <ul class="invite-list">
+                <div ng-repeat="invite in invites" >
+                    <style type="text/css">
+                        .invite-character-{{invite.id}}{
+                        {{(invite.avatar.indexOf('character') == -1) ? invite.avatar : ''}}
+                            background-size: cover !important;
+                            background-repeat: no-repeat;
+                        }
+                    </style>
+                    <div class="image" ng-class="invite.characterClass" ></div>
+                    <div class="details">
+                        <p><b>{{invite.displayName}}</b> has sent a request for you to Play <b>{{invite.tableName}} table</b>.
+                            Please respond with below options</p>
+                        <button class="btn btn-helper" ng-click="accept(invite)">ACCEPT</button>
+                        <button class="btn btn-sub" ng-click="reject(invite)">REJECT</button>
+                    </div>
+                </li>
+            </ul>
+            <button class="btn-main" ng-click="closeDialog()">Close</button>
+        </div>
+    </md-dialog-content>
+
+</md-dialog>
+

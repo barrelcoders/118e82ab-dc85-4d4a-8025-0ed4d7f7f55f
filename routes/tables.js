@@ -3,6 +3,11 @@ var router = express.Router();
 var DAL = require('../lib/dal');
 var utils = require('../lib/base/utils');
 var dateTime = require('node-datetime');
+var tableInviteStatus = {
+    0: 'PENDING',
+    1: 'ACCEPTED',
+    2: 'REJECTED'
+};
 
 var tableStatus = {
     CREATED: 'CREATED',
@@ -226,5 +231,96 @@ router.post('/loadGifts', function(req, res) {
                 message: 'PROBLEM_FETCHING_GIFTS'
             });
         });
+});
+router.post('/loadInvities', function(req, res) {
+    if (req.body.req_to) {
+        DAL.db.custom_tables.loadInvites(req.body.req_to, function(invites){
+            if (!invites || invites.length === 0) {
+                res.json({
+                    status: 'failed',
+                    message: 'NO_INVITES_FOUND'
+                });
+            } else {
+                res.json({
+                    status: 'success',
+                    data: invites
+                });
+            }
+        }, function(err){
+            res.json({
+                status: 'failed',
+                message: 'PROBLEM_FETCHING_INVITES'
+            });
+        });
+    }
+
+});
+router.post('/sendPlayInvite', function(req, res) {
+    var invite;
+    if (req.body.req_from && req.body.req_to && req.body.table_id) {
+        DAL.db.custom_tables.existingPlayInvite({
+            req_from: req.body.req_from,
+            req_to: req.body.req_to,
+            table_id: req.body.table_id,
+        }, function (invites) {
+            if (!invites || invites.length === 0) {
+                invite = {
+                    req_from: req.body.req_from,
+                    req_to: req.body.req_to,
+                    table_id: req.body.table_id,
+                    status: req.body.status
+                };
+                DAL.db.custom_tables.sendPlayInvite(invite, function (result) {
+                    res.json({
+                        status: 'success',
+                    });
+                }, function (err) {
+                    res.json({
+                        status: 'failed',
+                        message: 'PROBLEM_SENDING_INVITE'
+                    });
+                });
+            } else {
+                res.json({
+                    status: 'failed',
+                    message: 'INVITE_ALREADY_EXISTS'
+                });
+            }
+        }, function(err){
+            res.json({
+                status: 'failed',
+                message: 'PROBLEM_SENDING_INVITE'
+            });
+        });
+    }
+
+});
+router.post('/updateInviteStatus', function(req, res) {
+    if (req.body.id && req.body.status) {
+        DAL.db.custom_tables.updateInviteStatus(req.body.id, req.body.status, function(){
+            res.json({
+                status: 'success',
+            });
+        }, function(error){
+            res.json({
+                status: 'failed',
+                message: 'PROBLEM_UPDATE_INVITE_STATUS'
+            });
+        });
+    }
+});
+router.post('/deleteInvite', function(req, res) {
+    if (req.body.id) {
+        DAL.db.chats.deleteInvite(req.body.id, function(){
+            res.json({
+                status: 'success',
+            });
+        }, function(error){
+            res.json({
+                status: 'failed',
+                message: 'PROBLEM_DELETE_INVITE'
+            });
+        });
+    }
 });
 module.exports = router;

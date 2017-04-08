@@ -73,6 +73,23 @@ angular.module('table99', [
                 };
             }
         });
+        $mdDialogProvider.addPreset('fBPlayInvite', {
+            options: function() {
+                return {
+                    templateUrl:"../templates/fBPlayInvite.html",
+                    controller: 'fBPlayInviteDialogCtrl',
+                };
+            }
+        });
+        $mdDialogProvider.addPreset('inviteList', {
+            options: function() {
+                return {
+                    templateUrl:"../templates/inviteList.html",
+                    controller: 'inviteListDialogCtrl',
+                };
+            }
+        });
+
 
         $urlRouterProvider.otherwise("/home");
 
@@ -859,6 +876,9 @@ angular.module('table99.services').factory('userService', ['$http',
             updateBonusTime: function(params){
                 return $http.post('/user/updateBonusTime', params);
             },
+            getFBUser: function(params){
+                return $http.post('/user/getFBUser', params);
+            },
         };
     }
 ]);
@@ -888,6 +908,18 @@ angular.module('table99.services').factory('tableService', ['$http',
             },
             loadGifts: function(params){
                 return $http.post ('/tables/loadGifts', params);
+            },
+            sendPlayInvite: function(params){
+                return $http.post ('/tables/sendPlayInvite', params);
+            },
+            loadInvities: function(params){
+                return $http.post ('/tables/loadInvities', params);
+            },
+            updateInviteStatus: function(params){
+                return $http.post ('/tables/updateInviteStatus', params);
+            },
+            deleteInvite: function(params){
+                return $http.post ('/tables/deleteInvite', params);
             },
         };
     }
@@ -1012,12 +1044,13 @@ angular.module('table99.controllers').controller('signInCtrl', ['$rootScope', '$
                     FB.api("me/?fields=email,first_name,last_name,picture.width(200).height(200)",["email","public_profile"],
                         onError,
                         function (response) {
-                            if(response && response.first_name && response.last_name && response.email && response.picture){
+                            if(response && response.id && response.first_name && response.last_name && response.email && response.picture){
                                 var name = response.first_name +" "+ response.last_name,
                                     email = response.email,
-                                    picture = response.picture.data.url;
+                                    picture = response.picture.data.url,
+                                    id = response.id;
 
-                                facebookSignIn(name, email, picture);
+                                facebookSignIn(id, name, email, picture);
                             }
                             else{
                                 onError();
@@ -1030,19 +1063,20 @@ angular.module('table99.controllers').controller('signInCtrl', ['$rootScope', '$
                             FB.api("me/?fields=email,first_name,last_name,picture.width(200).height(200)",["email","public_profile"],
                                 onError,
                                 function (response) {
-                                    if(response && response.first_name && response.last_name && response.email && response.picture){
+                                    if(response && response.id && response.first_name && response.last_name && response.email && response.picture){
                                         var name = response.first_name +" "+ response.last_name,
                                             email = response.email,
-                                            picture = response.picture.data.url;
+                                            picture = response.picture.data.url,
+                                            id = response.id;
 
-                                        facebookSignIn(name, email, picture);
+                                        facebookSignIn(id, name, email, picture);
                                     }
                                     else{
                                         onError();
                                     }
                                 });
                         }
-                    },{scope:'email,public_profile'});
+                    },{scope:'email,public_profile,user_friends'});
                 }
             });
         }
@@ -1051,11 +1085,12 @@ angular.module('table99.controllers').controller('signInCtrl', ['$rootScope', '$
             $state.go('signup',{});
         };
 
-        function facebookSignIn(name, email, picture){
+        function facebookSignIn(id, name, email, picture){
             userService.fbsignin({
                 name: name,
                 email: email,
                 picture: picture,
+                fb_id: id
             }).success(function(res) {
                 if (res.status == 'success') {
                     var user = res.data;
@@ -1079,8 +1114,10 @@ angular.module('table99.controllers').controller('signInCtrl', ['$rootScope', '$
     }
 ]);
 angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$localStorage', '$scope', 'tableService',
-    '$state', 'layoutService', 'soundService', '$mdDialog', 'userService','$interval','$window',
-    function($rootScope, $localStorage, $scope, tableService, $state, layoutService, soundService, $mdDialog, userService, $interval, $window) {
+    '$state', 'layoutService', 'soundService', '$mdDialog', 'userService','$interval','$window', 'socket',
+    function($rootScope, $localStorage, $scope, tableService, $state, layoutService, soundService, $mdDialog, userService,
+             $interval, $window, socket) {
+        var interval;
         $rootScope.layout = layoutService.layoutClass.gameLayout;
         $scope.bonusObj = {};
         $scope.background = '';
@@ -1089,6 +1126,7 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
         $scope.customTables = [];
         $scope.isLoading = false;
         $scope.nextBonusDateShortString = '0 hrs';
+        $scope.invites = [];
 
         if($localStorage){
             if(!$localStorage.USER){
@@ -1173,8 +1211,16 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
                 })
             );
         };
+        $scope.restartBonusInterval = function(bonusObj){
+            var nextDate = moment(bonusObj.received).add(1, 'days').unix(),
+                currentDate = moment().unix(),
+                diffTime = nextDate - currentDate,
+                duration = moment.duration(diffTime * 1000, 'milliseconds');
 
-
+            var interval = $interval(function(){
+                bonusInterval(duration);
+            }, 1000);
+        };
         $scope.slickConfig = {
             variableWidth: true,
             slidesToScroll: 1,
@@ -1193,6 +1239,7 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
             soundService.exitClick();
             if($localStorage.USER){
                 $localStorage.USER = undefined;
+                $localStorage.FB_FRIENDS = undefined;
                 $state.go('signin', {});
             }
         };
@@ -1234,8 +1281,10 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
             $state.go('createTable',{});
         };
 
+        initSocketEvents();
         findTables();
         findBonus();
+        loadInvites();
 
         function findTables(){
             if($scope.isLoading)
@@ -1288,8 +1337,8 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
                 user: $scope.user.id
             }).success(function(res) {
                 if (res.status == 'success') {
-                    soundService.alert();
                     $scope.bonusObj = res.data;
+                    soundService.alert();
                     $mdDialog.show(
                         $mdDialog.bonus({
                             scope: $scope,
@@ -1305,40 +1354,79 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
                     }
                     if(res.message == 'ALREADY_CREDITED'){
                         $scope.bonusObj = res.data;
-                        var nextDate = moment($scope.bonusObj.received).add('days', 1).unix(),
+                        var nextDate = moment($scope.bonusObj.received).add(1, 'days').unix(),
                             currentDate = moment().unix(),
                             diffTime = nextDate - currentDate,
                             duration = moment.duration(diffTime * 1000, 'milliseconds');
 
-                        var interval = $interval(function() {
-                            duration = moment.duration(duration.asMilliseconds() - 1000, 'milliseconds');
-                            var d = moment.duration(duration).days(),
-                                h = moment.duration(duration).hours(),
-                                m = moment.duration(duration).minutes(),
-                                s = moment.duration(duration).seconds();
-
-                            d = $.trim(d).length === 1 ? '0' + d : d;
-                            h = $.trim(h).length === 1 ? '0' + h : h;
-                            m = $.trim(m).length === 1 ? '0' + m : m;
-                            s = $.trim(s).length === 1 ? '0' + s : s;
-
-                            $scope.nextBonusDateShortString = parseInt(h)+" hrs ";
-
-                            var remainingSeconds = duration.asSeconds();
-                            if(remainingSeconds <= 0){
-                                soundService.alert();
-                                $mdDialog.show(
-                                    $mdDialog.bonus({
-                                        scope: $scope,
-                                        preserveScope: true,
-                                        parent: angular.element(document.body),
-                                        locals: {},
-                                    })
-                                );
-                            }
+                        interval = $interval(function(){
+                            bonusInterval(duration);
                         }, 1000);
                     }
                 }
+            });
+        }
+        function loadInvites(user_id){
+            tableService.loadInvities({
+                req_to: user_id || $scope.user.id
+            }).success(function(res) {
+                if (res.status == 'success') {
+                    soundService.alert();
+                    if(res.data.length > 0){
+                        $mdDialog.show(
+                            $mdDialog.inviteList({
+                                scope: $scope,
+                                preserveScope: true,
+                                parent: angular.element(document.body),
+                                locals: {INVITES: res.data, USER: $scope.user},
+                            })
+                        );
+                    }
+                }
+
+                if (res.status == 'failed') {
+                    if(res.message == 'NO_INVITES_FOUND'){
+                    }
+                    if(res.message == 'PROBLEM_FETCHING_INVITES'){
+                    }
+                }
+            });
+        }
+        function bonusInterval(duration) {
+            duration = moment.duration(duration.asMilliseconds() - 1000, 'milliseconds');
+            var d = moment.duration(duration).days(),
+                h = moment.duration(duration).hours(),
+                m = moment.duration(duration).minutes(),
+                s = moment.duration(duration).seconds();
+
+            d = $.trim(d).length === 1 ? '0' + d : d;
+            h = $.trim(h).length === 1 ? '0' + h : h;
+            m = $.trim(m).length === 1 ? '0' + m : m;
+            s = $.trim(s).length === 1 ? '0' + s : s;
+
+            $scope.nextBonusDateShortString = parseInt(h)+" hrs ";
+
+            var remainingSeconds = duration.asSeconds();
+            if(remainingSeconds <= 0){
+                $interval.cancel(interval);
+                soundService.alert();
+                $mdDialog.show(
+                    $mdDialog.bonus({
+                        scope: $scope,
+                        preserveScope: true,
+                        parent: angular.element(document.body),
+                        locals: {},
+                    })
+                );
+            }
+        }
+        function initSocketEvents() {
+            var scope = $scope;
+            socket.on('tableInviteReceived', function (args) {
+                if($scope.user.id != args.req_to)
+                    return;
+
+                loadInvites(args.req_to);
             });
         }
     }
@@ -2201,7 +2289,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                                             }
                                         });
                                 }
-                            },{scope:'email,public_profile'});
+                            },{scope:'email,public_profile,user_friends'});
                         }
                     });
                 }, 2000);
@@ -2399,11 +2487,14 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
         };
         $scope.openFBFriendsDialog = function($event){
             soundService.alert();
-            FB.ui({
-                method: 'send',
-                link:  BASE_URL+"#/userPlay/"+$scope.table.id+"/true",
-                //picture: BASE_URL+"/images/3-cards.png",
-            });
+            $mdDialog.show(
+                $mdDialog.fBPlayInvite({
+                    scope: $scope,
+                    preserveScope: true,
+                    parent: angular.element(document.body),
+                    locals: {USER: $scope.user, TABLE_ID: $scope.tableId},
+                })
+            );
         };
         $scope.openShopDialogFromMenu = function(){
             $scope.isMenuOpen = false;
@@ -2766,7 +2857,7 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                 }, 1000);
             });
             socket.on('distributeCards', function(args){
-                if(scope.tableId != args.tableId && args.minPlayerAvailable)
+                if($scope.tableId != args.tableId && args.minPlayerAvailable)
                     return;
 
                 if($localStorage.cardAnimationRunning)
@@ -2963,7 +3054,8 @@ angular.module('table99.controllers').controller('bonusDialogCtrl', ['$rootScope
                                 $localStorage.USER = localStorageData;
                             }
                             $scope.user.chips = res.data.chips;
-                            var nextDate = moment($scope.bonusObj.received).add('days', 1).unix(),
+                            $scope.restartBonusInterval($scope.bonusObj);
+                            var nextDate = moment($scope.bonusObj.received).add(1, 'days').unix(),
                                 currentDate = moment().unix(),
                                 diffTime = nextDate - currentDate,
                                 duration = moment.duration(diffTime * 1000, 'milliseconds');
@@ -3019,7 +3111,7 @@ angular.module('table99.controllers').controller('bonusDialogCtrl', ['$rootScope
                     if(res.message == 'ALREADY_CREDITED'){
                         $scope.bonusObj = res.data;
                         $scope.bonusCredited = true;
-                        var nextDate = moment($scope.bonusObj.received).add('days', 1).unix(),
+                        var nextDate = moment($scope.bonusObj.received).add(1, 'days').unix(),
                             currentDate = moment().unix(),
                             diffTime = nextDate - currentDate,
                             duration = moment.duration(diffTime * 1000, 'milliseconds');
@@ -3340,3 +3432,179 @@ angular.module('table99.controllers').controller('rulesDialogCtrl', ['$rootScope
             $mdDialog.hide();
         };
 }]);
+angular.module('table99.controllers').controller('fBPlayInviteDialogCtrl', ['$rootScope', '$scope', '$state',
+    '$localStorage','soundService', 'userService', 'tableService', '$mdDialog', 'socket', 'USER', 'TABLE_ID',
+    function($rootScope, $scope, $state, $localStorage, soundService, userService, tableService, $mdDialog, socket,
+             USER, TABLE_ID) {
+        $scope.fb_friends = [];
+
+        if($localStorage && $localStorage.FB_FRIENDS){
+            $scope.fb_friends = $localStorage.FB_FRIENDS;
+            addInviteInfo();
+        }
+        else{
+            FB.getLoginStatus(function(response) {
+                if (response.status === 'connected'){
+                    //taggable_friends?limit=5000"
+                    FB.api("me/friends?fields=name,id,email,picture.width(200).height(200)",["user_friends", "email","public_profile"],
+                        onError,
+                        function (response) {
+                            if(response.data.length > 0){
+                                $scope.fb_friends = response.data;
+                                saveFriends();
+                                addInviteInfo();
+                            }
+                        });
+                }
+                else{
+                    FB.login(function (response) {
+                        if (response.status === 'connected'){
+                            FB.api("me/friends?fields=name,id,email,picture.width(200).height(200)",["user_friends"],
+                                onError,
+                                function (response) {
+                                    if(response.data.length > 0){
+                                        $scope.fb_friends = response.data;
+                                        saveFriends();
+                                        addInviteInfo();
+                                    }
+                                });
+                        }
+                    },{scope:'email,public_profile,user_friends'});
+                }
+            });
+        }
+
+        $scope.invite = function(friend){
+            userService.getFBUser({fb_id: friend.id}).success(function(res) {
+                if (res.status == 'success') {
+                    var friend_info = res.data, inviteInfo = {
+                        req_from: USER.id,
+                        req_to: friend_info.id,
+                        table_id: TABLE_ID,
+                        status: 0
+                    };
+                    tableService.sendPlayInvite(inviteInfo).success(function(res) {
+                        if (res.status == 'success') {
+                            friend.invited = true;
+                            $scope.sendInviteUpdate(inviteInfo);
+                        }
+                        if (res.status == 'failed') {
+                            if(res.message == 'INVITE_ALREADY_EXISTS'){
+                                friend.invited = true;
+                                $scope.sendInviteUpdate(inviteInfo);
+                            }
+                            if(res.message == 'PROBLEM_SENDING_INVITE'){
+                                alert("Problem in sending invite, Please try after sometime");
+                            }
+                        }
+                    })
+
+                }
+
+                if (res.status == 'failed') {
+                    if(res.message == 'PROBLEM_FETCHING_FB_USER'){
+                        alert("Problem in sending invite, Please try after sometime");
+                    }
+                    if(res.message == 'FB_USER_NOT_FOUND'){
+                        alert("Sorry, user is not available on Table99");
+                    }
+                }
+            });
+        };
+        $scope.sendInviteUpdate = function(data){
+            socket.emit('sendTableInvite', data);
+        };
+        $scope.closeDialog = function(){
+            soundService.buttonClick();
+            $mdDialog.hide();
+        };
+
+        function saveFriends(){
+            $localStorage.FB_FRIENDS = $scope.fb_friends;
+        }
+        function addInviteInfo(){
+            for(var i=0; i<=$scope.fb_friends.length-1; i++)
+                $scope.fb_friends[i].invited = false;
+        }
+        function onError(){
+            alert('Problem fetching facebook friends, Please try again later');
+        }
+    }]);
+angular.module('table99.controllers').controller('inviteListDialogCtrl', ['$rootScope', '$scope', '$state',
+    '$localStorage','soundService', 'userService', 'tableService', '$mdDialog', 'USER', 'INVITES',
+    function($rootScope, $scope, $state, $localStorage, soundService, userService, tableService, $mdDialog, USER, INVITES) {
+        $scope.user = USER;
+        $scope.invites = [];
+
+        if(INVITES && INVITES.length > 0){
+            $scope.invites = INVITES;
+            for(var i=0; i<= $scope.invites.length -1; i++){
+                $scope.invites[i].characterClass = ($scope.invites[i].avatar.indexOf('character') > -1) ?
+                    $scope.invites[i].avatar : 'invite-character-'+$scope.invites[i].id;
+            }
+
+        }
+        else{
+            tableService.loadInvities({
+                req_to: $scope.user.id
+            }).success(function(res) {
+                if (res.status == 'success') {
+                    $scope.invites = res.data;
+                }
+
+                if (res.status == 'failed') {
+                    if(res.message == 'NO_INVITES_FOUND'){
+                    }
+                    if(res.message == 'PROBLEM_FETCHING_INVITES'){
+                    }
+                }
+            });
+        }
+
+        $scope.accept = function(invite){
+            tableService.updateInviteStatus({
+                id: invite.id,
+                status: 1
+            }).success(function(res) {
+                if (res.status == 'success') {
+                    angular.element('.md-dialog-container, .md-scroll-mask, md-backdrop').remove();
+                    $state.go('userPlay', {id: invite.table_id, ref: true});
+                }
+
+                if (res.status == 'failed') {
+                    if(res.message == 'PROBLEM_UPDATE_INVITE_STATUS'){
+                        alert('Problem in accepting invite. Please try after sometime.');
+                    }
+                }
+            });
+        };
+        $scope.reject = function(invite){
+            tableService.updateInviteStatus({
+                id: invite.id,
+                status: 2
+            }).success(function(res) {
+                if (res.status == 'success') {
+                    for(var i=0; i < $scope.invites.length; i++){
+                        if($scope.invites[i].id == invite.id){
+                            $scope.invites.splice(i, 1);
+                            break;
+                        }
+                    }
+                    if($scope.invites.length == 0){
+                        angular.element('.md-dialog-container, .md-scroll-mask, md-backdrop').remove();
+                    }
+                }
+
+                if (res.status == 'failed') {
+                    if(res.message == 'PROBLEM_UPDATE_INVITE_STATUS'){
+                        alert('Problem in accepting invite. Please try after sometime.');
+                    }
+                }
+            });
+        };
+        $scope.closeDialog = function(){
+            soundService.buttonClick();
+            angular.element('.md-dialog-container, .md-scroll-mask, md-backdrop').remove();
+        };
+
+    }]);

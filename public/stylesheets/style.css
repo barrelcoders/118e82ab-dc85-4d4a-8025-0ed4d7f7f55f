@@ -1576,6 +1576,65 @@ audio{
   cursor: pointer;
 }
 
+.friends-list {
+  height: 200px;
+  max-height: 200px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0;
+  margin-top: 20px;
+}
+.friends-list li{
+  margin-bottom: 5px;
+}
+.friends-list img {
+  height: 50px;
+  width: 50px;
+  float: left;
+  display: inline-block;
+}
+.friends-list span {
+  color: #FFF;
+  font-size: 20px;
+  padding-left: 10px;
+  line-height: 50px;
+  display: inline-block;
+  height: 50px;
+  width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.friends-list button{
+  float: right;
+  margin: 7px 20px 0 0;
+}
+.invite-list{
+  height: 200px;
+  max-height: 200px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0;
+  margin-top: 20px;
+}
+.invite-list .image {
+  height: 100px;
+  width: 100px;
+  float: left;
+  display: inline-block;
+  border: 1px Solid #FFF;
+}
+.invite-list p {
+  color: #FFF;
+  font-size: 15px;
+  padding-left: 10px;
+  line-height: 30px;
+  display: inline-block;
+}
+.invite-list .details {
+  padding-left: 110px;
+}
+
 .btn-main{
   background: #6ab5ce;
   background: -moz-linear-gradient(top, #6ab5ce 0%, #2372b1 46%, #0060ad 51%, #000056 100%);
@@ -1640,12 +1699,22 @@ audio{
   margin-right: 10px;
   display: inline-block;
 }
-.btn-invite-friends{
+.btn-facebook{
+  background: #3b5998;
   position: fixed;
   bottom: 20px;
   right: 10px;
   font-size: 50px;
-  height: 65px;
+  border: 2px solid #FFF;
+  width: 60px;
+  text-align: center;
+  padding: 5px;
+  height: 60px;
+  border-radius: 30px;
+  color: #FFF;
+}
+.btn-facebook:active, .btn-facebook:hover, .btn-facebook:focus{
+  color: #FFF;
 }
 .btn-main:hover, .btn-helper:hover, .btn-sub:hover, .btn-chat:hover,
 .btn-main:active, .btn-helper:active, .btn-sub:active, .btn-chat:active,
@@ -1883,6 +1952,18 @@ md-dialog.bonus-dialog md-dialog-content form .btn-main{
   display: inline-block;
   min-width: 100px;
 }
+md-dialog.play-invite-dialog{
+  height: 420px;
+}
+md-dialog.play-invite-dialog md-dialog-content{
+  top: 80px;
+  padding: 0 60px;
+  height: 300px;
+}
+md-dialog.play-invite-dialog md-dialog-content .btn-main{
+  width: 80px;
+}
+
 
 /*and (-webkit-min-device-pixel-ratio: 3) or (-webkit-min-device-pixel-ratio: 2)*/
 

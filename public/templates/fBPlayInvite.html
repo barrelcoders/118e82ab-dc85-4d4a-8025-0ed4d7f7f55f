@@ -1,0 +1,17 @@
+<md-dialog aria-label="Play Invite Dialog" class="play-invite-dialog">
+    <md-dialog-content>
+        <div>
+            <h2 class="heading">INVITE FRIENDS TO PLAY:</h2>
+            <ul class="friends-list">
+                <li ng-repeat="friend in fb_friends" >
+                    <img ng-src="{{friend.picture.data.url}}"/>
+                    <span class="name">{{friend.name}}</span>
+                    <button ng-class="{'btn-sub': friend.invited, 'btn-helper': !friend.invited }" ng-click="invite(friend)">{{friend.invited ? 'INVITED' : 'INVITE'}}</button>
+                </li>
+            </ul>
+            <button class="btn-main" ng-click="closeDialog()">Close</button>
+        </div>
+    </md-dialog-content>
+
+</md-dialog>
+

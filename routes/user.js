@@ -179,6 +179,7 @@ router.post('/fbsignin', function(req, res) {
                     email: req.body.email,
                     password: '',
                     chips: 2500000,
+                    fb_id: req.body.fb_id,
                     avatar: 'background: url('+req.body.picture+');'
                 };
                 DAL.db.users.insert(user, function(result){
@@ -229,6 +230,35 @@ router.post('/get', function(req, res) {
     } else {
         res.json({
             status: 'failed'
+        });
+    }
+});
+router.post('/getFBUser', function(req, res) {
+    var fbUser;
+    if (req.body.fb_id) {
+        DAL.db.users.findByFBId(req.body.fb_id, function(results){
+            if (!results || results.length === 0) {
+                res.json({
+                    status: 'failed',
+                    message: 'FB_USER_NOT_FOUND'
+                });
+            } else {
+                fbUser = results[0];
+                res.json({
+                    'status': 'success',
+                    data: fbUser,
+                });
+            }
+        }, function(err){
+            res.json({
+                status: 'failed',
+                message: 'PROBLEM_FETCHING_FB_USER'
+            });
+        });
+    } else {
+        res.json({
+            status: 'failed',
+            message: 'PROBLEM_FETCHING_FB_USER'
         });
     }
 });
