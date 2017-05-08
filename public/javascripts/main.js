@@ -2256,15 +2256,16 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                 $timeout(function(){
                     FB.getLoginStatus(function(response) {
                         if (response.status === 'connected'){
-                            FB.api("me/?fields=email,first_name,last_name,picture.width(200).height(200)",["email","public_profile"],
+                            FB.api("me/?fields=id,email,first_name,last_name,picture.width(200).height(200)",["email","public_profile"],
                                 onError,
                                 function (response) {
-                                    if(response && response.first_name && response.last_name && response.email && response.picture){
+                                    if(response && response.id && response.first_name && response.last_name && response.email && response.picture){
                                         var name = response.first_name +" "+ response.last_name,
                                             email = response.email,
-                                            picture = response.picture.data.url;
+                                            picture = response.picture.data.url,
+                                            id = response.id;
 
-                                        facebookSignIn(name, email, picture);
+                                        facebookSignIn(id, name, email, picture);
                                     }
                                     else{
                                         onError();
@@ -2274,15 +2275,16 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
                         else{
                             FB.login(function (response) {
                                 if (response.status === 'connected'){
-                                    FB.api("me/?fields=email,first_name,last_name,picture.width(200).height(200)",["email","public_profile"],
+                                    FB.api("me/?fields=id,email,first_name,last_name,picture.width(200).height(200)",["email","public_profile"],
                                         onError,
                                         function (response) {
-                                            if(response && response.first_name && response.last_name && response.email && response.picture){
+                                            if(response && response.id && response.first_name && response.last_name && response.email && response.picture){
                                                 var name = response.first_name +" "+ response.last_name,
                                                     email = response.email,
-                                                    picture = response.picture.data.url;
+                                                    picture = response.picture.data.url,
+                                                    id = response.id;
 
-                                                facebookSignIn(name, email, picture);
+                                                facebookSignIn(id, name, email, picture);
                                             }
                                             else{
                                                 onError();
@@ -2517,11 +2519,12 @@ angular.module('table99.controllers').controller('userPlayCtrl', ['$rootScope', 
             delete window.onbeforeunload;
         });
 
-        function facebookSignIn(name, email, picture){
+        function facebookSignIn(id, name, email, picture){
             userService.fbsignin({
                 name: name,
                 email: email,
                 picture: picture,
+                fb_id: id
             }).success(function(res) {
                 if (res.status == 'success') {
                     var user = res.data;
