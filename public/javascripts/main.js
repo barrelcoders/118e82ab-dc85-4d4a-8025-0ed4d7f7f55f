@@ -1405,6 +1405,7 @@ angular.module('table99.controllers').controller('tablesCtrl', ['$rootScope', '$
             s = $.trim(s).length === 1 ? '0' + s : s;
 
             $scope.nextBonusDateShortString = parseInt(h)+" hrs ";
+            angular.element( document.querySelector( '.bonus-container .time > b' )).html($scope.nextBonusDateShortString);
 
             var remainingSeconds = duration.asSeconds();
             if(remainingSeconds <= 0){
@@ -1495,10 +1496,10 @@ angular.module('table99.controllers').controller('createTableCtrl', ['$rootScope
     }
 ]);
 angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$localStorage', '$scope', 'tableService', '$state',
-    '$stateParams', '$filter', '$timeout', 'layoutService', 'soundService', '$mdDialog', 'socket',
+    '$stateParams', '$filter', '$timeout', 'layoutService', 'soundService', '$mdDialog', 'socket', '$interval',
     function($rootScope, $localStorage, $scope, tableService, $state, $stateParams,  $filter, $timeout,
-             layoutService, soundService, $mdDialog, socket) {
-        var tableId = $stateParams.id, socket, tableLoadingInProgress = false;
+             layoutService, soundService, $mdDialog, socket, $interval) {
+        var tableId = $stateParams.id, socket, tableLoadingInProgress = false, betCountDownInterval = null;
         $rootScope.layout = layoutService.layoutClass.bodyLayout;
         $scope.background = '';
         $scope.user = {};
@@ -1515,6 +1516,7 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
         $scope.tableId = tableId;
         $scope.tableInfoOpen = false;
         $scope.isMenuOpen = false;
+        $scope.betCounterMessage = "";
 
         if($localStorage){
             if(!$localStorage.USER){
@@ -1601,6 +1603,9 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
             socket.emit('seeMyCards', {player: $scope.currentPlayer, tableId: tableId} );
         }
         $scope.placeBet = function() {
+            $interval.cancel(betCountDownInterval);
+            betCountDownInterval = null;
+            $scope.betCounterMessage = "";
             socket.emit('placeBet', {
                 tableId: tableId,
                 player: $scope.currentPlayer,
@@ -1754,6 +1759,9 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
         };
         $scope.$on('$destroy', function (event) {
             socket.removeAllListeners();
+            $interval.cancel(betCountDownInterval);
+            betCountDownInterval = null;
+            $scope.betCounterMessage = "";
             delete window.onbeforeunload;
         });
 
@@ -1842,6 +1850,73 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                     }
                     $scope.$digest();
                 }, 3000);
+            });
+            socket.on('betCountDown', function(args){
+                if(args.tableId != tableId)
+                    return;
+
+                if(betCountDownInterval)
+                    return;
+
+                var isCurrentPlayerChance = false, playerName = "", betCounter = args.counter;
+
+                for (var player in args.players) {
+                    var info = args.players[player];
+                    if(info.turn){
+                        playerName = info.playerInfo.displayName;
+                        if($scope.currentPlayer.playerInfo.id == info.playerInfo.id ){
+                            isCurrentPlayerChance = true;
+                            break;
+                        }
+                    }
+                }
+
+                if(isCurrentPlayerChance){
+                    $scope.betCounterMessage = playerName + ", you have " + betCounter + " seconds to place your bet";
+                }
+                else{
+                    $scope.betCounterMessage = playerName + " have " + betCounter + " seconds to place your bet";
+                }
+
+                betCountDownInterval = $interval(function() {
+                    if (betCounter <= 0) {
+                        $interval.cancel(betCountDownInterval);
+                        betCountDownInterval = null;
+                        $scope.betCounterMessage = "";
+                        if(isCurrentPlayerChance){
+                            alert('Sorry '+ playerName + ', you have missed the chance');
+
+                            socket.emit('placePack', {
+                                tableId: tableId,
+                                player: $scope.currentPlayer,
+                                bet: {
+                                    action: $scope.currentPlayer.lastAction,
+                                    amount: "",
+                                    blind: false
+                                }
+                            });
+                        }
+                        else{
+                            $scope.betCounterMessage = playerName + " have missed the chance";
+                        }
+                    } else {
+                        betCounter--;
+                        if(isCurrentPlayerChance){
+                            $scope.betCounterMessage = playerName + ", you have " + betCounter + " seconds to place your bet";
+                        }
+                        else{
+                            $scope.betCounterMessage = playerName + " have " + betCounter + " seconds to place bet";
+                        }
+                    }
+                }, 1000);
+            });
+            socket.on('stopBetCountDowns', function(args){
+                if(args.tableId != tableId)
+                    return;
+
+                $interval.cancel(betCountDownInterval);
+                betCountDownInterval = null;
+                $scope.betCounterMessage = "";
             });
             socket.on('sideShowResponded', function(args) {
                 if(args.tableId == tableId)
@@ -2058,15 +2133,15 @@ angular.module('table99.controllers').controller('playCtrl', ['$rootScope', '$lo
                 $scope.gameCountdownMessage = "Your game will begin in " + counter + " seconds";
                 $scope.showMessage = true;
                 $scope.$digest();
-                var interValId = window.setInterval(function() {
+                var interValId = $interval(function() {
                     counter--;
                     if (counter == 0) {
-                        clearInterval(interValId);
+                        $interval.cancel(interValId);
                         $scope.showMessage = false;
                     } else {
                         $scope.gameCountdownMessage = "Your game will begin in " + counter + " seconds";
                     }
-                    $scope.$digest();
+                    //$scope.$digest();
                 }, 1000);
             });
             socket.on('cardsSeen', function(args) {
@@ -3058,31 +3133,6 @@ angular.module('table99.controllers').controller('bonusDialogCtrl', ['$rootScope
                             }
                             $scope.user.chips = res.data.chips;
                             $scope.restartBonusInterval($scope.bonusObj);
-                            var nextDate = moment($scope.bonusObj.received).add(1, 'days').unix(),
-                                currentDate = moment().unix(),
-                                diffTime = nextDate - currentDate,
-                                duration = moment.duration(diffTime * 1000, 'milliseconds');
-
-                            var interval = $interval(function() {
-                                duration = moment.duration(duration.asMilliseconds() - 1000, 'milliseconds');
-                                var d = moment.duration(duration).days(),
-                                    h = moment.duration(duration).hours(),
-                                    m = moment.duration(duration).minutes(),
-                                    s = moment.duration(duration).seconds();
-
-                                d = $.trim(d).length === 1 ? '0' + d : d;
-                                h = $.trim(h).length === 1 ? '0' + h : h;
-                                m = $.trim(m).length === 1 ? '0' + m : m;
-                                s = $.trim(s).length === 1 ? '0' + s : s;
-
-                                $scope.nextBonusDateString = parseInt(h)+"h "+parseInt(m)+"m "+parseInt(s)+"s";
-
-                                var remainingSeconds = duration.asSeconds();
-                                if(remainingSeconds <= 0){
-                                    $interval.cancel(interval);
-                                    $scope.bonusCredited = false;
-                                }
-                            }, 1000);
                         }
                         if (res.status == 'failed') {
                             if(res.message == "PROBLEM_UPDATING_BALANCE"){
